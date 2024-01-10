@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "lib": "vue-cli-service build --report --target lib --dest dist/lib --name designPrint install.js && node ./scripts/update-target-lib.js",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
