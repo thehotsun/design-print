@@ -81,20 +81,25 @@
         <hiprint-pager-margin></hiprint-pager-margin>
       </div>
     </div>
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <designTable msg="Welcome to Your Vue.js App" />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld'
-import grid from './components/svg/grid'
-import hiprintRulWrapper from './components/rulWrapper'
-import hiprintPagerMargin from './components/pagerMargin'
+import grid from './components/layout/svg/grid'
+import hiprintRulWrapper from './components/layout/rulWrapper'
+import hiprintPagerMargin from './components/layout/pagerMargin'
+
+import designTable from './components/widget/designTable'
 export default {
-  name: 'App',
+  name: 'designArea',
+  data() {
+    return {}
+  },
+  methods: {},
 
   components: {
-    HelloWorld,
+    designTable,
     gridSvg: grid,
     hiprintRulWrapper,
     hiprintPagerMargin,

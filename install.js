@@ -1,3 +1,3 @@
-import app from '@/App.vue'
+import designPrint from '@/layout.vue'
 
-export { app }
+export { designPrint }

@@ -2,6 +2,7 @@ import getRenderOptions from '@/define/renderOptions'
 import './index.less'
 export default {
   name: 'designTable',
+
   props: {
     onlyShow: Boolean,
     formData: Object,
