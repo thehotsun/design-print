@@ -1,0 +1,9 @@
+{
+    "semi": true,
+    "singleQuote": false,
+    "printWidth": 180,
+    "jsxBracketSameLine": false,
+    "trailingComma": "none",
+    "prettier.arrowParens": "avoid",
+    "prettier.jsxSingleQuote": false
+}

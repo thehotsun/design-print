@@ -22,17 +22,17 @@
 </template>
 
 <script>
-import dataSource from './components/dataSource'
-import panel from './components/panel'
-import designArea from './components/designArea'
-import widgetList from './components/widgetList'
+import dataSource from "./components/dataSource";
+import panel from "./components/panel";
+import designArea from "./components/designArea";
+import widgetList from "./components/widgetList";
 export default {
-  name: 'design_print_layout',
+  name: "design_print_layout",
   components: {
     dataSource,
     panel,
     designArea,
-    widgetList,
-  },
-}
+    widgetList
+  }
+};
 </script>

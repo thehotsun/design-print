@@ -1,110 +1,128 @@
 <template>
-  <div class="print-component-design">
-    <div class="print-printPanel panel-index-2">
-      <div
-        class="hiprint-printPaper design"
-        original-height="148"
-        style="width: 210mm; height: 147mm"
-      >
-        <div class="hiprint-printPaper-content">
-          <div
-            class="hiprint-headerLine"
-            style="
-              position: absolute;
-              width: 100%;
-              border-top: 1px dashed rgb(201, 190, 190);
-              height: 7pt;
-              top: 0pt;
-            "
-          ></div>
-          <div
-            class="hiprint-footerLine"
-            style="
-              position: absolute;
-              width: 100%;
-              border-top: 1px dashed rgb(201, 190, 190);
-              height: 7pt;
-              top: 408pt;
-            "
-          ></div>
+  <div>
+    <el-tabs v-model="editableTabsValue" type="card" editable @tab-remove="removeTab" @tab-add="addTab">
+      <el-tab-pane v-for="item in editableTabs" :key="item.name" :label="item.title" :name="item.name">
+        <div class="print-component-design">
+          <div class="print-printPanel panel-index-2">
+            <div class="hiprint-printPaper design" original-height="148" style="width: 210mm; height: 147mm">
+              <div class="hiprint-printPaper-content">
+                <div class="hiprint-headerLine" style="position: absolute; width: 100%; border-top: 1px dashed rgb(201, 190, 190); height: 7pt; top: 0pt"></div>
+                <div class="hiprint-footerLine" style="position: absolute; width: 100%; border-top: 1px dashed rgb(201, 190, 190); height: 7pt; top: 408pt"></div>
 
-          <div
-            class="hiprint-referLine hideheaderLinetarget hiprint-referLine-x"
-            style="
-              position: absolute;
-              width: 7pt;
-              border-left: 1px dashed rgb(138, 143, 153);
-              height: 100%;
-              left: -12px;
-              top: 0px;
-              border-top-color: rgb(138, 143, 153);
-              border-right-color: rgb(138, 143, 153);
-              border-bottom-color: rgb(138, 143, 153);
-            "
-            id="cadec79d9f3d4fd89ce069f5a9e4aece"
-            direction="x"
-          ></div>
-          <span
-            class="hiprint-paperNumber"
-            style="
-              position: absolute;
-              cursor: pointer;
-              font-size: 9pt;
-              font-family: SimSun;
-              font-weight: lighter;
-              color: rgb(46, 48, 51);
-              letter-spacing: 0.75pt;
-              line-height: initial;
-              left: 30pt;
-              bottom: 5pt;
-            "
-            >3
-            <div
-              panelindex="3"
-              class="resize-panel"
-              style="
-                width: 100%;
-                height: 100%;
-                top: 0px;
-                left: 0px;
-                position: absolute;
-                background-color: rgba(0, 0, 0, 0.09);
-                cursor: pointer;
-                display: none;
-                color: rgb(0, 0, 0);
-              "
-            ></div
-          ></span>
+                <div
+                  class="hiprint-referLine hideheaderLinetarget hiprint-referLine-x"
+                  style="
+                    position: absolute;
+                    width: 7pt;
+                    border-left: 1px dashed rgb(138, 143, 153);
+                    height: 100%;
+                    left: -12px;
+                    top: 0px;
+                    border-top-color: rgb(138, 143, 153);
+                    border-right-color: rgb(138, 143, 153);
+                    border-bottom-color: rgb(138, 143, 153);
+                  "
+                  id="cadec79d9f3d4fd89ce069f5a9e4aece"
+                  direction="x"
+                ></div>
+                <span
+                  class="hiprint-paperNumber"
+                  style="
+                    position: absolute;
+                    cursor: pointer;
+                    font-size: 9pt;
+                    font-family: SimSun;
+                    font-weight: lighter;
+                    color: rgb(46, 48, 51);
+                    letter-spacing: 0.75pt;
+                    line-height: initial;
+                    left: 30pt;
+                    bottom: 5pt;
+                  "
+                  >3
+                  <div
+                    panelindex="3"
+                    class="resize-panel"
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      top: 0px;
+                      left: 0px;
+                      position: absolute;
+                      background-color: rgba(0, 0, 0, 0.09);
+                      cursor: pointer;
+                      display: none;
+                      color: rgb(0, 0, 0);
+                    "
+                  ></div
+                ></span>
+              </div>
+              <hiprint-rul-wrapper></hiprint-rul-wrapper>
+              <grid-svg></grid-svg>
+              <hiprint-pager-margin></hiprint-pager-margin>
+            </div>
+          </div>
+          <designTable />
         </div>
-        <hiprint-rul-wrapper></hiprint-rul-wrapper>
-        <grid-svg></grid-svg>
-        <hiprint-pager-margin></hiprint-pager-margin>
-      </div>
-    </div>
-    <designTable msg="Welcome to Your Vue.js App" />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script>
-import grid from './components/layout/svg/grid'
-import hiprintRulWrapper from './components/layout/rulWrapper'
-import hiprintPagerMargin from './components/layout/pagerMargin'
+import grid from "./components/layout/svg/grid";
+import hiprintRulWrapper from "./components/layout/rulWrapper";
+import hiprintPagerMargin from "./components/layout/pagerMargin";
 
-import designTable from './components/widget/designTable'
+import designTable from "./components/widget/designTable";
 export default {
-  name: 'designArea',
-  data() {
-    return {}
-  },
-  methods: {},
-
+  name: "designArea",
   components: {
     designTable,
     gridSvg: grid,
     hiprintRulWrapper,
-    hiprintPagerMargin,
+    hiprintPagerMargin
   },
-}
+  data() {
+    return {
+      editableTabsValue: "1",
+      editableTabs: [
+        {
+          title: "分页 1",
+          name: "1"
+        }
+      ]
+    };
+  },
+
+  methods: {
+    addTab() {
+      let newTabName = `${this.editableTabs.at(-1).name * 1 + 1}`;
+      this.editableTabs.push({
+        title: `分页 ${newTabName}`,
+        name: newTabName
+      });
+      this.editableTabsValue = newTabName;
+    },
+    removeTab(targetName) {
+      let tabs = this.editableTabs;
+      let activeName = this.editableTabsValue;
+      if (activeName === targetName) {
+        tabs.forEach((tab, index) => {
+          if (tab.name === targetName) {
+            let nextTab = tabs[index + 1] || tabs[index - 1];
+            if (nextTab) {
+              activeName = nextTab.name;
+            }
+          }
+        });
+      }
+
+      this.editableTabsValue = activeName;
+      this.editableTabs = tabs.filter((tab) => tab.name !== targetName);
+    }
+  }
+};
 </script>
 
 <style lang="less" scoped>
@@ -125,11 +143,12 @@ export default {
   }
 }
 
-.hiprint-printPaper * {
+::v-deep .hiprint-printPaper * {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
 }
+
 .hiprint-printPanel .hiprint-printPaper:last-child {
   page-break-after: avoid;
 }
