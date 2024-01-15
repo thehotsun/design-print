@@ -1,13 +1,14 @@
-import getRenderOptions from "@/define/renderOptions"; import "./index.less";
+import "./index.less";
 export default {
   name: "designTable",
 
   props: {
     onlyShow: Boolean,
-    formData: Object
+    formData: Object,
+    options: Object
   },
   data() {
-    return { formRef: "q", renderOptions: {} };
+    return { formRef: "q" };
   },
 
   watch: {},
@@ -16,12 +17,8 @@ export default {
   },
 
   methods: {
-    init() {
-      this.renderOptions = getRenderOptions();
-    },
-    setRenderOptions(options) {
-      this.renderOptions = options;
-    },
+    init() {},
+    setRenderOptions() {},
     getTdComp(tdOptions) {
       const { attrs = {}, options = {} } = tdOptions;
 
@@ -109,10 +106,10 @@ export default {
   },
 
   render() {
-    const { formRef, getTableComp, renderOptions } = this;
+    const { formRef, getTableComp, options } = this;
     return (
       <div class="designTableWrapper" ref={formRef}>
-        {getTableComp(renderOptions)}
+        {getTableComp(options)}
       </div>
     );
   }

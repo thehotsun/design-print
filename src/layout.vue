@@ -7,7 +7,7 @@
       <el-main>
         <el-container>
           <el-header>
-            <widgetList @setTable="setTable"></widgetList>
+            <widgetList></widgetList>
           </el-header>
           <el-main>
             <designArea></designArea>
@@ -26,6 +26,7 @@ import dataSource from "./components/dataSource";
 import panel from "./components/panel";
 import designArea from "./components/designArea";
 import widgetList from "./components/widgetList";
+
 export default {
   name: "design_print_layout",
   components: {
@@ -37,10 +38,6 @@ export default {
   data() {
     return {};
   },
-  methods: {
-    setTable(arr) {
-      console.log("setTable", arr);
-    }
-  }
+  methods: {}
 };
 </script>

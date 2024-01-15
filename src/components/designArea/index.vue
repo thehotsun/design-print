@@ -62,7 +62,9 @@
               <hiprint-pager-margin></hiprint-pager-margin>
             </div>
           </div>
-          <designTable />
+          <div v-for="item in printWidgetList" :key="item.options.customAttrs.id">
+            <component :is="item.widgetType.type" :options="item.options"></component>
+          </div>
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -75,10 +77,13 @@ import hiprintRulWrapper from "./components/layout/rulWrapper";
 import hiprintPagerMargin from "./components/layout/pagerMargin";
 
 import designTable from "./components/widget/designTable";
+
+import renderOptions from "../../define/obRenderOptions";
+
 export default {
   name: "designArea",
   components: {
-    designTable,
+    customTable: designTable,
     gridSvg: grid,
     hiprintRulWrapper,
     hiprintPagerMargin
@@ -91,8 +96,15 @@ export default {
           title: "分页 1",
           name: "1"
         }
-      ]
+      ],
+      renderOptions
     };
+  },
+
+  computed: {
+    printWidgetList() {
+      return renderOptions.printWidgetList;
+    }
   },
 
   methods: {

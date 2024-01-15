@@ -20,6 +20,8 @@
 
 <script>
 import tableSetting from "./components/tableSetting.vue";
+import customTableDefine from "../../define/customTableDefine";
+import renderOptions from "../../define/obRenderOptions";
 export default {
   name: "widgetList",
   components: {
@@ -31,7 +33,8 @@ export default {
         // 在这里添加你的列表项
         { text: "表格", icon: "el-icon-s-grid", icon2: "el-icon-caret-bottom", showPanel: true }
       ],
-      showtableSetting: true
+      showtableSetting: true,
+      renderOptions
     };
   },
   methods: {
@@ -41,9 +44,15 @@ export default {
         this.showtableSetting = !this.showtableSetting;
       }
     },
-    handleTable(arr) {
+    handleTable([row, column]) {
       this.showtableSetting = false;
-      this.$emit("setTable", arr);
+      renderOptions.printWidgetList.push(
+        new customTableDefine({
+          row,
+          column
+        })
+      );
+      console.log("handleTable", row, column);
     }
   }
 };
