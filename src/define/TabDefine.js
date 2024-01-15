@@ -1,4 +1,4 @@
-export default function TabDefine({ index = "1" }) {
+export default function TabDefine({ index = "0" }) {
   return {
     index,
     paperType: "A4",

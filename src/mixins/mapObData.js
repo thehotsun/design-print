@@ -8,11 +8,11 @@ export default {
     },
     renderOptions() {
       const { renderOptionList, curTabIndex } = designOptions;
-      return renderOptionList[curTabIndex - 1];
+      return renderOptionList[curTabIndex];
     },
     printWidgetList() {
       const { renderOptionList, curTabIndex } = designOptions;
-      return renderOptionList[curTabIndex - 1].printWidgetList;
+      return renderOptionList[curTabIndex].printWidgetList;
     },
     curTabIndex() {
       return designOptions.curTabIndex;
@@ -30,6 +30,9 @@ export default {
     },
     addTabData(index) {
       designOptions.renderOptionList.push(new TabDefine({ index }));
+    },
+    delTabData(index) {
+      designOptions.renderOptionList.splice(index, 1);
     }
   }
 };
