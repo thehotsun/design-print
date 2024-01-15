@@ -13,7 +13,7 @@
       </el-menu>
     </el-scrollbar>
     <div v-if="showtableSetting" class="absolute gridSetting">
-      <tableSetting></tableSetting>
+      <tableSetting @handleTable="handleTable"></tableSetting>
     </div>
   </div>
 </template>
@@ -40,6 +40,10 @@ export default {
       if (item.text === "表格") {
         this.showtableSetting = !this.showtableSetting;
       }
+    },
+    handleTable(arr) {
+      this.showtableSetting = false;
+      this.$emit("setTable", arr);
     }
   }
 };

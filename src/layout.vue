@@ -7,7 +7,7 @@
       <el-main>
         <el-container>
           <el-header>
-            <widgetList></widgetList>
+            <widgetList @setTable="setTable"></widgetList>
           </el-header>
           <el-main>
             <designArea></designArea>
@@ -33,6 +33,14 @@ export default {
     panel,
     designArea,
     widgetList
+  },
+  data() {
+    return {};
+  },
+  methods: {
+    setTable(arr) {
+      console.log("setTable", arr);
+    }
   }
 };
 </script>

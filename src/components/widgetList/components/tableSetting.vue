@@ -7,7 +7,7 @@
         <i class="el-icon-question"></i>
       </el-tooltip>
     </div>
-    <div class="print-single-component-table-matrix" @mouseleave="handleMouseleave">
+    <div class="print-single-component-table-matrix" @mouseleave="handleMouseleave" @mouseup="handleMouseup" @mousedown="handleMousedown">
       <div style="display: flex; flex-wrap: wrap; height: 144px; width: 180px">
         <div
           v-for="(item, index) in 80"
@@ -30,18 +30,29 @@
 export default {
   data() {
     return {
-      tableTrNum: 0
+      tableTrNum: 0,
+      isProcessing: false
     };
   },
   methods: {
     openTableDialog() {},
     handleMouseenter(e) {
-      console.log(e.target.dataset.index);
-      this.tableTrNum = e.target.dataset.index;
-      console.log(this.transformAxis(this.tableTrNum));
+      if (this.isProcessing) {
+        this.tableTrNum = e.target.dataset.index;
+      }
     },
     handleMouseleave() {
       this.tableTrNum = 0;
+    },
+    handleMouseup() {
+      this.isProcessing = false;
+      if (this.tableTrNum > 0) {
+        this.$emit("handleTable", this.transformAxis(this.tableTrNum));
+      }
+    },
+    handleMousedown() {
+      console.log("handleMousedown");
+      this.isProcessing = true;
     },
     transformAxis(num) {
       const numStr = `${num}`;

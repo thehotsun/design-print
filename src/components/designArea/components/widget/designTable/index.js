@@ -1,122 +1,120 @@
-import getRenderOptions from '@/define/renderOptions'
-import './index.less'
+import getRenderOptions from "@/define/renderOptions";
+import "./index.less";
 export default {
-  name: 'designTable',
+  name: "designTable",
 
   props: {
     onlyShow: Boolean,
-    formData: Object,
+    formData: Object
   },
   data() {
-    return { formRef: 'q', renderOptions: {} }
+    return { formRef: "q", renderOptions: {} };
   },
 
   watch: {},
   async created() {
-    this.init()
+    this.init();
   },
 
   methods: {
     init() {
-      this.renderOptions = getRenderOptions()
+      this.renderOptions = getRenderOptions();
+    },
+    setRenderOptions(options) {
+      this.renderOptions = options;
     },
     getTdComp(tdOptions) {
-      const { attrs = {}, options = {} } = tdOptions
+      const { attrs = {}, options = {} } = tdOptions;
 
-      const listeners = {}
+      const listeners = {};
       return (
         <td
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
         >
           <div>{options.value}</div>
         </td>
-      )
+      );
     },
     getTrComp(options) {
-      const { getTdComp } = this
-      const { attrs = {}, tdList = [] } = options
-      const listeners = {}
+      const { getTdComp } = this;
+      const { attrs = {}, tdList = [] } = options;
+      const listeners = {};
       return (
         <tr
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
         >
           {tdList.map((item) => {
-            return getTdComp(item)
+            return getTdComp(item);
           })}
         </tr>
-      )
+      );
     },
     getTbodyComp(bodyOptions) {
-      const { getTrComp } = this
-      const { attrs = {}, trList = [] } = bodyOptions
-      const listeners = {}
+      const { getTrComp } = this;
+      const { attrs = {}, trList = [] } = bodyOptions;
+      const listeners = {};
       return (
         <tbody
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
         >
           {trList.map((trOptions) => {
-            return getTrComp(trOptions)
+            return getTrComp(trOptions);
           })}
         </tbody>
-      )
+      );
     },
     getTheadComp(headOptions) {
-      const { getTrComp } = this
-      const { attrs = {}, trOptions = {} } = headOptions
-      const listeners = {}
+      const { getTrComp } = this;
+      const { attrs = {}, trOptions = {} } = headOptions;
+      const listeners = {};
       if (Object.keys(trOptions).length) {
         return (
           <thead
             {...{
               attrs,
-              on: listeners,
+              on: listeners
             }}
           >
             {getTrComp(trOptions)}
           </thead>
-        )
+        );
       } else {
-        return
+        return;
       }
     },
     getTableComp(tableOptions) {
-      const {
-        headOptions = {},
-        bodyOptions = {},
-        attrs = {},
-        useThead = false,
-      } = tableOptions
-      const listeners = {}
-      const { getTbodyComp, getTheadComp } = this
+      const { headOptions = {}, bodyOptions = {}, attrs = {}, useThead = false } = tableOptions;
+      const listeners = {};
+      const { getTbodyComp, getTheadComp } = this;
       return (
         <table
           {...{
             attrs,
-            on: listeners,
+            on: listeners
           }}
         >
-          {useThead ? getTheadComp(headOptions) : ''}
+          {useThead ? getTheadComp(headOptions) : ""}
           {getTbodyComp(bodyOptions)}
         </table>
-      )
-    },
+      );
+    }
   },
 
   render() {
-    const { formRef, getTableComp, renderOptions } = this
+    const { formRef, getTableComp, renderOptions } = this;
     return (
       <div class="designTableWrapper" ref={formRef}>
         {getTableComp(renderOptions)}
       </div>
-    )
-  },
-}
+    );
+  }
+};
