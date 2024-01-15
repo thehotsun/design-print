@@ -1,5 +1,4 @@
-import getRenderOptions from "@/define/renderOptions";
-import "./index.less";
+import getRenderOptions from "@/define/renderOptions"; import "./index.less";
 export default {
   name: "designTable",
 
