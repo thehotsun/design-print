@@ -21,22 +21,23 @@
 <script>
 import tableSetting from "./components/tableSetting.vue";
 import customTableDefine from "../../define/customTableDefine";
-import renderOptions from "../../define/obRenderOptions";
+import mapObData from "@/mixins/mapObData";
 export default {
   name: "widgetList",
   components: {
     tableSetting
   },
+  mixins: [mapObData],
   data() {
     return {
       list: [
         // 在这里添加你的列表项
         { text: "表格", icon: "el-icon-s-grid", icon2: "el-icon-caret-bottom", showPanel: true }
       ],
-      showtableSetting: true,
-      renderOptions
+      showtableSetting: false
     };
   },
+
   methods: {
     handleClick(item) {
       // 在这里处理点击事件
@@ -46,7 +47,7 @@ export default {
     },
     handleTable([row, column]) {
       this.showtableSetting = false;
-      renderOptions.printWidgetList.push(
+      this.renderOptions.printWidgetList.push(
         new customTableDefine({
           row,
           column

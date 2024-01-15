@@ -1,7 +1,7 @@
 <template>
   <div>
-    <el-tabs v-model="editableTabsValue" type="card" editable @tab-remove="removeTab" @tab-add="addTab">
-      <el-tab-pane v-for="item in editableTabs" :key="item.name" :label="item.title" :name="item.name">
+    <el-tabs :value="curTabIndex" type="card" editable @tab-remove="removeTab" @tab-add="addTab" @change="handleTabChange">
+      <el-tab-pane v-for="item in editableTabs" :key="item.name" :label="item.title + item.name" :name="item.name">
         <div class="print-component-design">
           <div class="print-printPanel panel-index-2">
             <div class="hiprint-printPaper design" original-height="148" style="width: 210mm; height: 147mm">
@@ -78,7 +78,7 @@ import hiprintPagerMargin from "./components/layout/pagerMargin";
 
 import designTable from "./components/widget/designTable";
 
-import renderOptions from "../../define/obRenderOptions";
+import mapObData from "@/mixins/mapObData";
 
 export default {
   name: "designArea",
@@ -88,50 +88,43 @@ export default {
     hiprintRulWrapper,
     hiprintPagerMargin
   },
+  mixins: [mapObData],
+
   data() {
     return {
-      editableTabsValue: "1",
       editableTabs: [
         {
-          title: "分页 1",
+          title: "分页 ",
           name: "1"
         }
-      ],
-      renderOptions
+      ]
     };
   },
 
-  computed: {
-    printWidgetList() {
-      return renderOptions.printWidgetList;
-    }
-  },
-
   methods: {
+    handleTabChange(targetName) {
+      this.setCurTabIndex(targetName);
+    },
     addTab() {
       let newTabName = `${this.editableTabs.at(-1).name * 1 + 1}`;
       this.editableTabs.push({
-        title: `分页 ${newTabName}`,
+        title: `分页 `,
         name: newTabName
       });
-      this.editableTabsValue = newTabName;
+      this.addTabData(newTabName);
+      this.setCurTabIndex(newTabName);
     },
     removeTab(targetName) {
-      let tabs = this.editableTabs;
-      let activeName = this.editableTabsValue;
-      if (activeName === targetName) {
-        tabs.forEach((tab, index) => {
-          if (tab.name === targetName) {
-            let nextTab = tabs[index + 1] || tabs[index - 1];
-            if (nextTab) {
-              activeName = nextTab.name;
-            }
-          }
+      console.log("targetName", targetName);
+      this.editableTabs = this.editableTabs.filter((tab) => tab.name !== targetName);
+      if (targetName === `${this.editableTabs.length + 1}`) {
+        this.setCurTabIndex(`${this.editableTabs.length}`);
+      } else {
+        this.setCurTabIndex(targetName);
+        this.editableTabs.map((item, index) => {
+          item.name = `${index + 1}`;
         });
       }
-
-      this.editableTabsValue = activeName;
-      this.editableTabs = tabs.filter((tab) => tab.name !== targetName);
     }
   }
 };
