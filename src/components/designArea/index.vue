@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-tabs :value="curTabIndex" type="card" editable @tab-remove="removeTab" @tab-add="addTab" @tab-click="handleTabChange">
-      <el-tab-pane v-for="item in editableTabs" :key="item.name" :label="item.title + (item.name * 1 + 1)" :name="item.name">
+      <el-tab-pane v-for="item in renderOptionList" :key="item.index" :label="'分页 ' + (item.index * 1 + 1)" :name="item.index">
         <div class="print-component-design">
           <div class="print-printPanel panel-index-2">
             <div class="hiprint-printPaper design" original-height="148" style="width: 210mm; height: 147mm">
@@ -91,14 +91,7 @@ export default {
   mixins: [mapObData],
 
   data() {
-    return {
-      editableTabs: [
-        {
-          title: "分页 ",
-          name: "0"
-        }
-      ]
-    };
+    return {};
   },
 
   methods: {
@@ -107,24 +100,20 @@ export default {
       this.setCurTabIndex(targetName.index);
     },
     addTab() {
-      let newTabName = `${this.editableTabs.length}`;
-      this.editableTabs.push({
-        title: `分页 `,
-        name: newTabName
-      });
+      let newTabName = `${this.renderOptionList.length}`;
       this.addTabData(newTabName);
       this.setCurTabIndex(newTabName);
     },
     removeTab(targetName) {
       console.log("targetName", targetName);
       this.delTabData(targetName);
-      this.editableTabs = this.editableTabs.filter((tab) => tab.name !== targetName);
-      if (targetName === `${this.editableTabs.length}`) {
-        this.setCurTabIndex(`${this.editableTabs.length - 1}`);
+      const length = this.renderOptionList.length;
+      if (targetName === `${length}`) {
+        this.setCurTabIndex(`${length - 1}`);
       } else {
         this.setCurTabIndex(targetName);
-        this.editableTabs.map((item, index) => {
-          item.name = `${index}`;
+        this.renderOptionList.map((item, index) => {
+          item.index = `${index}`;
         });
       }
     }

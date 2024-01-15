@@ -10,6 +10,9 @@ export default {
       const { renderOptionList, curTabIndex } = designOptions;
       return renderOptionList[curTabIndex];
     },
+    renderOptionList() {
+      return designOptions.renderOptionList;
+    },
     printWidgetList() {
       const { renderOptionList, curTabIndex } = designOptions;
       return renderOptionList[curTabIndex].printWidgetList;
