@@ -1,4 +1,5 @@
 import "./index.less";
+import { ContextMenu } from "@/utils/index";
 export default {
   name: "designTable",
 
@@ -8,7 +9,7 @@ export default {
     options: Object
   },
   data() {
-    return { formRef: "q" };
+    return { formRef: "q", menuSinglton: null };
   },
 
   watch: {},
@@ -17,7 +18,46 @@ export default {
   },
 
   methods: {
-    init() {},
+    init() {
+      this.menuSinglton = ContextMenu({
+        menus: [
+          {
+            name: "custom menu 1",
+            onClick: function (e) {
+              console.log("menu1 clicked", e);
+            }
+          },
+          {
+            name: "custom menu 2",
+            onClick: function (e) {
+              console.log("menu2 clicked", e);
+            }
+          },
+          {
+            name: "custom menu 3",
+            onClick: function (e) {
+              console.log("menu3 clicked", e);
+            }
+          }
+        ]
+      });
+      document.addEventListener("click", this.hideMenu);
+    },
+    hideMenu() {
+      const menus = this.menuSinglton.getInstance();
+      menus.style.display = "none";
+    },
+
+    showMenu(e) {
+      const menus = this.menuSinglton.getInstance();
+      menus.style.top = `${e.clientY}px`;
+      menus.style.left = `${e.clientX}px`;
+      menus.style.display = "block";
+    },
+    handleContextmenu(e) {
+      e.preventDefault();
+      this.showMenu(e);
+    },
     setRenderOptions() {},
     getTdComp(tdOptions) {
       const { attrs = {}, options = {} } = tdOptions;
@@ -89,7 +129,10 @@ export default {
     },
     getTableComp(tableOptions) {
       const { headOptions = {}, bodyOptions = {}, attrs = {}, useThead = false } = tableOptions;
-      const listeners = {};
+      const { handleContextmenu } = this;
+      const listeners = {
+        contextmenu: handleContextmenu
+      };
       const { getTbodyComp, getTheadComp } = this;
       return (
         <table

@@ -56,14 +56,16 @@
                     "
                   ></div
                 ></span>
+                <div class="widgetRenderArea">
+                  <div v-for="item in printWidgetList" :key="item.options.customAttrs.id">
+                    <component :is="item.widgetType.type" :options="item.options"></component>
+                  </div>
+                </div>
               </div>
               <hiprint-rul-wrapper></hiprint-rul-wrapper>
               <grid-svg></grid-svg>
               <hiprint-pager-margin></hiprint-pager-margin>
             </div>
-          </div>
-          <div v-for="item in printWidgetList" :key="item.options.customAttrs.id">
-            <component :is="item.widgetType.type" :options="item.options"></component>
           </div>
         </div>
       </el-tab-pane>
@@ -124,6 +126,7 @@ export default {
 <style lang="less" scoped>
 .print-component-design {
   background-color: #f7f8fa;
+  position: relative;
 }
 .hiprint-printPaper {
   position: relative;
@@ -160,5 +163,11 @@ export default {
 .hiprint-printPanel {
   box-sizing: border-box;
   border: 0px;
+}
+.widgetRenderArea {
+  position: relative;
+  padding: 28.3465pt;
+  width: 100%;
+  height: 100%;
 }
 </style>
