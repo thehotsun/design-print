@@ -4,8 +4,7 @@ function ContextMenu(options) {
   // 创建实例方法
   function createMenu() {
     const ul = document.createElement("ul");
-    ul.id = "rcb_menu";
-    // ul.classList.add("custom-context-menu");
+    ul.classList.add("custom-context-menu");
     const { menus } = options;
     if (menus && menus.length > 0) {
       for (let menu of menus) {

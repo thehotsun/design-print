@@ -22,19 +22,49 @@ export default {
       this.menuSinglton = ContextMenu({
         menus: [
           {
-            name: "custom menu 1",
+            name: "合并单元格",
             onClick: function (e) {
               console.log("menu1 clicked", e);
             }
           },
           {
-            name: "custom menu 2",
+            name: "左侧插入列",
             onClick: function (e) {
               console.log("menu2 clicked", e);
             }
           },
           {
-            name: "custom menu 3",
+            name: "右侧插入列",
+            onClick: function (e) {
+              console.log("menu3 clicked", e);
+            }
+          },
+          {
+            name: "上方插入行",
+            onClick: function (e) {
+              console.log("menu3 clicked", e);
+            }
+          },
+          {
+            name: "下方插入行",
+            onClick: function (e) {
+              console.log("menu2 clicked", e);
+            }
+          },
+          {
+            name: "删除行",
+            onClick: function (e) {
+              console.log("menu3 clicked", e);
+            }
+          },
+          {
+            name: "删除列",
+            onClick: function (e) {
+              console.log("menu2 clicked", e);
+            }
+          },
+          {
+            name: "清除内容",
             onClick: function (e) {
               console.log("menu3 clicked", e);
             }
