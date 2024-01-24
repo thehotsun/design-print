@@ -1,5 +1,6 @@
 import "./index.less";
 import { ContextMenu } from "@/utils/index";
+import { TrDefine, TdDefine } from "@/define/customTableDefine";
 export default {
   name: "designTable",
 
@@ -12,6 +13,7 @@ export default {
     return {
       formRef: "q",
       menuSinglton: null,
+      // 这里的坐标是经过（如果有合并单元格）换算后的第几行第几列
       selectRange: {
         colStartIndex: 0,
         rowStartIndex: 0,
@@ -43,41 +45,48 @@ export default {
             name: "左侧插入列",
             onClick: function (e) {
               console.log("menu2 clicked", e);
+              that.leftInsertColumn();
             }
           },
           {
             name: "右侧插入列",
             onClick: function (e) {
+              that.rightInsertColumn();
               console.log("menu3 clicked", e);
             }
           },
           {
             name: "上方插入行",
             onClick: function (e) {
+              that.topInsertRow();
               console.log("menu3 clicked", e);
             }
           },
           {
             name: "下方插入行",
             onClick: function (e) {
+              that.bottomInsertRow();
               console.log("menu2 clicked", e);
             }
           },
           {
             name: "删除行",
             onClick: function (e) {
+              that.delRow();
               console.log("menu3 clicked", e);
             }
           },
           {
             name: "删除列",
             onClick: function (e) {
+              that.delColumn();
               console.log("menu2 clicked", e);
             }
           },
           {
             name: "清除内容",
             onClick: function (e) {
+              that.clearValue();
               console.log("menu3 clicked", e);
             }
           }
@@ -114,6 +123,111 @@ export default {
         }
       }
     },
+    clearValue() {},
+    delColumn() {
+      const {
+        selectRange: { colStartIndex, colEndIndex },
+        options: {
+          bodyOptions: { trList }
+        },
+        resetSelectRange
+      } = this;
+      trList.map((item) => {
+        item.tdList.splice(colStartIndex - 1, colEndIndex - colStartIndex + 1);
+        for (let index = colStartIndex - 1; index < item.tdList.length; index++) {
+          item.tdList[index].attrs["data-colindex"] = index + 1;
+        }
+      });
+      // 删除后清空选中范围
+      resetSelectRange();
+    },
+    delRow() {
+      const {
+        selectRange: { rowStartIndex, rowEndIndex },
+        options: {
+          bodyOptions: { trList }
+        },
+        resetSelectRange
+      } = this;
+      trList.splice(rowStartIndex - 1, rowEndIndex - rowStartIndex + 1);
+      for (let index = rowStartIndex - 1; index < trList.length; index++) {
+        trList[index].tdList.map((item) => {
+          item.attrs["data-rowindex"] = index + 1;
+        });
+      }
+      // 删除后清空选中范围
+      resetSelectRange();
+    },
+    bottomInsertRow() {
+      const {
+        selectRange: { rowEndIndex },
+        options: {
+          bodyOptions: { trList }
+        }
+      } = this;
+      const column = trList[0].tdList.length;
+      trList.splice(rowEndIndex, 0, new TrDefine(column, rowEndIndex + 1));
+      for (let index = rowEndIndex + 1; index < trList.length; index++) {
+        trList[index].tdList.map((item) => {
+          item.attrs["data-rowindex"]++;
+        });
+      }
+    },
+    topInsertRow() {
+      const {
+        selectRange: { rowStartIndex },
+        options: {
+          bodyOptions: { trList }
+        }
+      } = this;
+      const column = trList[0].tdList.length;
+      trList.splice(rowStartIndex - 1, 0, new TrDefine(column, rowStartIndex));
+      for (let index = rowStartIndex; index < trList.length; index++) {
+        trList[index].tdList.map((item) => {
+          item.attrs["data-rowindex"]++;
+        });
+      }
+      this.selectRange.rowStartIndex++;
+      this.selectRange.rowEndIndex++;
+    },
+    rightInsertColumn() {
+      const {
+        selectRange: { colEndIndex },
+        options: {
+          bodyOptions: { trList }
+        }
+      } = this;
+      trList.map((item) => {
+        const {
+          options: { isHead },
+          attrs
+        } = item.tdList[0];
+        item.tdList.splice(colEndIndex, 0, new TdDefine({ colIndex: colEndIndex + 1, rowIndex: attrs["data-rowindex"], isHead }));
+        for (let index = colEndIndex + 1; index < item.tdList.length; index++) {
+          item.tdList[index].attrs["data-colindex"]++;
+        }
+      });
+    },
+    leftInsertColumn() {
+      const {
+        selectRange: { colStartIndex },
+        options: {
+          bodyOptions: { trList }
+        }
+      } = this;
+      trList.map((item) => {
+        const {
+          options: { isHead },
+          attrs
+        } = item.tdList[0];
+        item.tdList.splice(colStartIndex - 1, 0, new TdDefine({ colIndex: colStartIndex, rowIndex: attrs["data-rowindex"], isHead }));
+        for (let index = colStartIndex; index < item.tdList.length; index++) {
+          item.tdList[index].attrs["data-colindex"]++;
+        }
+      });
+      this.selectRange.colStartIndex++;
+      this.selectRange.colEndIndex++;
+    },
     checkIsSelect({ colIndex, rowIndex }) {
       const { colStartIndex, rowStartIndex, rowEndIndex, colEndIndex } = this.selectRange;
       return colStartIndex <= colIndex && colEndIndex >= colIndex && rowStartIndex <= rowIndex && rowEndIndex >= rowIndex;
@@ -121,7 +235,6 @@ export default {
     handleMouseenter(e) {
       if (this.isProcessing) {
         console.log(this.isProcessing, "handleMouseenter", e.target);
-        // const colSpan = e.target.colSpan;
         const {
           rowSpan,
           colSpan,
@@ -139,6 +252,12 @@ export default {
       //   this.selectRange.colEndIndex = 0;
       // }
     },
+    resetSelectRange() {
+      this.selectRange.rowStartIndex = 0;
+      this.selectRange.colStartIndex = 0;
+      this.selectRange.rowEndIndex = 0;
+      this.selectRange.colEndIndex = 0;
+    },
     handleMouseup() {
       this.isProcessing = false;
     },
@@ -154,10 +273,8 @@ export default {
       console.log("handleMousedown", e);
       if ([0, 1].includes(e.button)) {
         this.isProcessing = true;
-        this.selectRange.rowStartIndex = Number(e.target.dataset.rowindex);
-        this.selectRange.colStartIndex = Number(e.target.dataset.colindex);
-        this.selectRange.rowEndIndex = Number(e.target.dataset.rowindex);
-        this.selectRange.colEndIndex = Number(e.target.dataset.colindex);
+        this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = Number(e.target.dataset.rowindex);
+        this.selectRange.colEndIndex = this.selectRange.colStartIndex = Number(e.target.dataset.colindex);
       }
     },
     hideMenu() {

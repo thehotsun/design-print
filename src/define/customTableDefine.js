@@ -59,7 +59,7 @@ function getBodyOptions({ row, column }) {
   };
 }
 
-function TrDefine(column, rowIndex, isHead = false) {
+export function TrDefine(column, rowIndex, isHead = false) {
   const tdList = [];
   for (let index = 0; index < column; index++) {
     tdList.push(new TdDefine({ colIndex: index + 1, rowIndex, isHead }));
@@ -70,7 +70,7 @@ function TrDefine(column, rowIndex, isHead = false) {
   };
 }
 
-function TdDefine({ colIndex, rowIndex, isHead }) {
+export function TdDefine({ colIndex, rowIndex, isHead }) {
   return {
     attrs: {
       colspan: 1,
