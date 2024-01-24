@@ -37,7 +37,7 @@ function TableDefine({ row, column, useThead = false }) {
 }
 
 function getHeadOptions({ useThead, column }) {
-  const trOptions = new TrDefine(column);
+  const trOptions = new TrDefine(column, 1, true);
   if (useThead) {
     console.log();
   } else {
@@ -51,7 +51,7 @@ function getHeadOptions({ useThead, column }) {
 function getBodyOptions({ row, column }) {
   const trList = [];
   for (let index = 0; index < row; index++) {
-    trList.push(new TrDefine(column));
+    trList.push(new TrDefine(column, index + 1));
   }
   return {
     attrs: {},
@@ -59,10 +59,10 @@ function getBodyOptions({ row, column }) {
   };
 }
 
-function TrDefine(column) {
+function TrDefine(column, rowIndex, isHead = false) {
   const tdList = [];
   for (let index = 0; index < column; index++) {
-    tdList.push(new TdDefine());
+    tdList.push(new TdDefine({ colIndex: index + 1, rowIndex, isHead }));
   }
   return {
     attrs: {},
@@ -70,13 +70,17 @@ function TrDefine(column) {
   };
 }
 
-function TdDefine() {
+function TdDefine({ colIndex, rowIndex, isHead }) {
   return {
     attrs: {
       colspan: 1,
-      rowspan: 1
+      rowspan: 1,
+      "data-colindex": colIndex,
+      "data-rowindex": rowIndex
     },
     options: {
+      isDelete: 0,
+      isHead,
       value: ""
     }
   };

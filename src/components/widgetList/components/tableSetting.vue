@@ -35,7 +35,9 @@ export default {
     };
   },
   methods: {
-    openTableDialog() {},
+    openTableDialog() {
+      
+    },
     handleMouseenter(e) {
       if (this.isProcessing) {
         this.tableTrNum = e.target.dataset.index;
