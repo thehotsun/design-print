@@ -1,4 +1,4 @@
-function ContextMenu(options) {
+export function ContextMenu(options) {
   // 唯一实例
   let instance;
   // 创建实例方法
@@ -31,4 +31,6 @@ function ContextMenu(options) {
   };
 }
 
-export { ContextMenu };
+export const generateId = function () {
+  return Math.floor(Math.random() * 100000 + Math.random() * 20000 + Math.random() * 5000);
+};

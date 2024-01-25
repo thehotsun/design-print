@@ -166,7 +166,7 @@ export default {
 }
 .widgetRenderArea {
   position: relative;
-  padding: 28.3465pt;
+  padding: 10mm;
   width: 100%;
   height: 100%;
 }

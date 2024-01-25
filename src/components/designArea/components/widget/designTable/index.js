@@ -1,9 +1,11 @@
 import "./index.less";
 import { ContextMenu } from "@/utils/index";
 import { TrDefine, TdDefine } from "@/define/customTableDefine";
+import Draggable from "vuedraggable";
+
 export default {
   name: "designTable",
-
+  components: { Draggable },
   props: {
     onlyShow: Boolean,
     formData: Object,
@@ -20,7 +22,11 @@ export default {
         rowEndIndex: 0,
         colEndIndex: 0
       },
-      isProcessing: false
+      isProcessing: false,
+      showInputAxis: {
+        rowIndex: 0,
+        colIndex: 0
+      }
     };
   },
 
@@ -93,6 +99,12 @@ export default {
         ]
       });
       document.addEventListener("click", this.hideMenu);
+      document.addEventListener("click", this.resetShowInputAxis);
+    },
+    resetShowInputAxis() {
+      console.log("resetShowInputAxis");
+      this.showInputAxis.rowIndex = 0;
+      this.showInputAxis.colIndex = 0;
     },
     mergeCell() {
       const {
@@ -232,6 +244,15 @@ export default {
       const { colStartIndex, rowStartIndex, rowEndIndex, colEndIndex } = this.selectRange;
       return colStartIndex <= colIndex && colEndIndex >= colIndex && rowStartIndex <= rowIndex && rowEndIndex >= rowIndex;
     },
+    checkShowInput(attrs, rowIndex, colIndex) {
+      const result = attrs["data-rowindex"] === rowIndex && attrs["data-colindex"] === colIndex;
+      if (result) {
+        this.$nextTick(() => {
+          this.$refs[`${rowIndex}${colIndex}`].focus();
+        });
+      }
+      return result;
+    },
     handleMouseenter(e) {
       if (this.isProcessing) {
         console.log(this.isProcessing, "handleMouseenter", e.target);
@@ -246,10 +267,6 @@ export default {
     },
     handleMouseleave() {
       // if (this.isProcessing) {
-      //   this.selectRange.rowStartIndex = 0;
-      //   this.selectRange.colStartIndex = 0;
-      //   this.selectRange.rowEndIndex = 0;
-      //   this.selectRange.colEndIndex = 0;
       // }
     },
     resetSelectRange() {
@@ -259,6 +276,7 @@ export default {
       this.selectRange.colEndIndex = 0;
     },
     handleMouseup() {
+      // clearTimeout(this.timer);
       this.isProcessing = false;
     },
     handleMousedown(e) {
@@ -271,11 +289,25 @@ export default {
       // event.button==6 鼠标右键和中键同时按下
       // event.button==7 所有三个键都按下
       console.log("handleMousedown", e);
+      // clearTimeout(this.timer);
       if ([0, 1].includes(e.button)) {
         this.isProcessing = true;
         this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = Number(e.target.dataset.rowindex);
         this.selectRange.colEndIndex = this.selectRange.colStartIndex = Number(e.target.dataset.colindex);
       }
+      // this.timer = setTimeout(() => {
+      // }, 300);
+    },
+
+    handleDblclick(e) {
+      console.log("handleDblclick");
+      const {
+        dataset: { rowindex, colindex }
+      } = e.target;
+      this.showInputAxis.rowIndex = rowindex * 1;
+      this.showInputAxis.colIndex = colindex * 1;
+      this.resetSelectRange();
+      // clearTimeout(this.timer);
     },
     hideMenu() {
       const menus = this.menuSinglton.getInstance();
@@ -293,12 +325,46 @@ export default {
       this.showMenu(e);
     },
     setRenderOptions() {},
+    onDragEnd(evt) {
+      console.log("drag end", evt);
+    },
+
+    onDragAdd(evt) {
+      console.log("onDragAdd", evt);
+    },
+
+    onDragUpdate(evt) {
+      console.log("onDragUpdate", evt);
+    },
+
+    checkMove(evt) {
+      console.log("checkMove", evt);
+      return true;
+    },
     getTdComp(tdOptions) {
       const { attrs = {}, options = {} } = tdOptions;
-      const { handleMouseenter, checkIsSelect } = this;
+      const {
+        handleMouseenter,
+        checkIsSelect,
+        checkShowInput,
+        handleDblclick,
+        showInputAxis: { rowIndex, colIndex },
+        checkMove,
+        onDragUpdate,
+        onDragAdd,
+        onDragEnd
+      } = this;
       const listeners = {
-        mouseenter: handleMouseenter
+        mouseenter: handleMouseenter,
+        dblclick: handleDblclick
       };
+      const inputListeners = {
+        change: function () {
+          console.log("change");
+        }
+      };
+      const length = this.options.bodyOptions.trList[0].tdList.length;
+      // TODO style这里table默认宽度187是否需要更改？
       return (
         <td
           {...{
@@ -306,8 +372,40 @@ export default {
             on: listeners
           }}
           class={checkIsSelect({ colIndex: attrs["data-colindex"], rowIndex: attrs["data-rowindex"] }) ? "selected" : ""}
+          style={{ width: 187 / length + "mm" }}
         >
-          <div>{options.value}</div>
+          <div class="tdContent">
+            {checkShowInput(attrs, rowIndex, colIndex) ? (
+              <el-input
+                {...{
+                  attrs
+                }}
+                on={inputListeners}
+                v-model={options.inputValue}
+                ref={"" + rowIndex + colIndex}
+              ></el-input>
+            ) : (
+              <draggable
+                style="height: 100%;overflow-y: auto"
+                group="dragGroup"
+                ghostClass="ghost"
+                handle=".drag-handler"
+                list={options.dragValList}
+                animation={300}
+                move={checkMove}
+                onend={onDragEnd}
+                onadd={onDragAdd}
+                onupdate={onDragUpdate}
+              >
+                <transition-group name="fade" tag="div" class="valList">
+                  {options.dragValList.map((item, index) => {
+                    return <span key={index}>{item.id}</span>;
+                  })}
+                  <span key="inputValue">{options.inputValue}</span>
+                </transition-group>
+              </draggable>
+            )}
+          </div>
         </td>
       );
     },
@@ -372,8 +470,13 @@ export default {
       const listeners = {
         mouseleave: handleMouseleave,
         mouseup: handleMouseup,
-        mousedown: handleMousedown
+        mousedown: handleMousedown,
+        click: function (e) {
+          console.log("table inputListeners");
+          e.stopPropagation();
+        }
       };
+
       const { getTbodyComp, getTheadComp } = this;
       return (
         <table

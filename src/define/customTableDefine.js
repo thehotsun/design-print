@@ -81,7 +81,8 @@ export function TdDefine({ colIndex, rowIndex, isHead }) {
     options: {
       isDelete: 0,
       isHead,
-      value: ""
+      inputValue: "",
+      dragValList: []
     }
   };
 }
