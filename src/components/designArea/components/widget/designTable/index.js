@@ -20,7 +20,8 @@ export default {
         colStartIndex: 0,
         rowStartIndex: 0,
         rowEndIndex: 0,
-        colEndIndex: 0
+        colEndIndex: 0,
+        source: ""
       },
       isProcessing: false,
       showInputAxis: {
@@ -278,6 +279,7 @@ export default {
       this.selectRange.colStartIndex = 0;
       this.selectRange.rowEndIndex = 0;
       this.selectRange.colEndIndex = 0;
+      this.selectRange.source = "";
     },
     handleMouseup() {
       // clearTimeout(this.timer);
@@ -299,6 +301,8 @@ export default {
         console.log("handleMousedown", e.currentTarget, rowindex, colindex);
         this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = rowindex * 1;
         this.selectRange.colEndIndex = this.selectRange.colStartIndex = colindex * 1;
+        this.selectRange.source = "leftClickSelect";
+        this.hideMenu();
       }
     },
 
@@ -325,6 +329,14 @@ export default {
     },
     handleContextmenu(e) {
       e.preventDefault();
+      const { source } = this.selectRange;
+      if (source !== "leftClickSelect") {
+        const { rowindex, colindex } = e.currentTarget.dataset;
+        console.log("handleContextmenu", e.currentTarget, rowindex, colindex);
+        this.selectRange.rowStartIndex = this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = rowindex * 1;
+        this.selectRange.colStartIndex = this.selectRange.colEndIndex = this.selectRange.colStartIndex = colindex * 1;
+        this.selectRange.source = "rightClickSelect";
+      }
       this.showMenu(e);
     },
     setRenderOptions() {},
@@ -352,6 +364,7 @@ export default {
         checkIsSelect,
         checkShowInput,
         handleDblclick,
+        handleContextmenu,
         showInputAxis: { rowIndex, colIndex },
         checkMove,
         onDragUpdate,
@@ -361,7 +374,8 @@ export default {
       const listeners = {
         mousedown: handleMousedown,
         mouseenter: handleMouseenter,
-        dblclick: handleDblclick
+        dblclick: handleDblclick,
+        contextmenu: handleContextmenu
       };
       const inputListeners = {
         change: function () {
@@ -504,10 +518,10 @@ export default {
   },
 
   render() {
-    const { formRef, getTableComp, options, handleContextmenu } = this;
+    const { formRef, getTableComp, options } = this;
 
     return (
-      <div class="designTableWrapper" oncontextmenu={handleContextmenu} ref={formRef}>
+      <div class="designTableWrapper" ref={formRef}>
         {getTableComp(options)}
       </div>
     );
