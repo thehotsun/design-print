@@ -118,6 +118,7 @@ export default {
           bodyOptions: { trList }
         }
       } = this;
+      if (colStartIndex === colEndIndex && rowStartIndex === rowEndIndex) return;
       const target = trList[rowStartIndex - 1].tdList[colStartIndex - 1];
       const colspan = colEndIndex - colStartIndex + 1;
       const rowspan = rowEndIndex - rowStartIndex + 1;
