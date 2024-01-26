@@ -98,8 +98,12 @@ export default {
           }
         ]
       });
-      document.addEventListener("click", this.hideMenu);
-      document.addEventListener("click", this.resetShowInputAxis);
+      document.addEventListener("click", () => {
+        this.hideMenu();
+        this.resetShowInputAxis();
+        this.resetSelectRange();
+        this.handleMouseup();
+      });
     },
     resetShowInputAxis() {
       console.log("resetShowInputAxis");
@@ -255,12 +259,12 @@ export default {
     },
     handleMouseenter(e) {
       if (this.isProcessing) {
-        console.log(this.isProcessing, "handleMouseenter", e.target);
+        console.log(this.isProcessing, "handleMouseenter", e.currentTarget);
         const {
           rowSpan,
           colSpan,
           dataset: { rowindex, colindex }
-        } = e.target;
+        } = e.currentTarget;
         this.selectRange.rowEndIndex = rowindex * 1 + (rowSpan * 1 - 1);
         this.selectRange.colEndIndex = colindex * 1 + (colSpan * 1 - 1);
       }
@@ -288,22 +292,21 @@ export default {
       // event.button==5 鼠标左键和中键同时按下
       // event.button==6 鼠标右键和中键同时按下
       // event.button==7 所有三个键都按下
-      console.log("handleMousedown", e);
       // clearTimeout(this.timer);
       if ([0, 1].includes(e.button)) {
         this.isProcessing = true;
-        this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = Number(e.target.dataset.rowindex);
-        this.selectRange.colEndIndex = this.selectRange.colStartIndex = Number(e.target.dataset.colindex);
+        const { rowindex, colindex } = e.currentTarget.dataset;
+        console.log("handleMousedown", e.currentTarget, rowindex, colindex);
+        this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = rowindex * 1;
+        this.selectRange.colEndIndex = this.selectRange.colStartIndex = colindex * 1;
       }
-      // this.timer = setTimeout(() => {
-      // }, 300);
     },
 
     handleDblclick(e) {
-      console.log("handleDblclick");
       const {
         dataset: { rowindex, colindex }
-      } = e.target;
+      } = e.currentTarget;
+      console.log("handleDblclick", e.currentTarget);
       this.showInputAxis.rowIndex = rowindex * 1;
       this.showInputAxis.colIndex = colindex * 1;
       this.resetSelectRange();
@@ -345,6 +348,7 @@ export default {
       const { attrs = {}, options = {} } = tdOptions;
       const {
         handleMouseenter,
+        handleMousedown,
         checkIsSelect,
         checkShowInput,
         handleDblclick,
@@ -355,6 +359,7 @@ export default {
         onDragEnd
       } = this;
       const listeners = {
+        mousedown: handleMousedown,
         mouseenter: handleMouseenter,
         dblclick: handleDblclick
       };
@@ -399,7 +404,11 @@ export default {
               >
                 <transition-group name="fade" tag="div" class="valList">
                   {options.dragValList.map((item, index) => {
-                    return <span key={index}>{item.id}</span>;
+                    return (
+                      <span style="" key={index}>
+                        {item.id}
+                      </span>
+                    );
                   })}
                   <span key="inputValue">{options.inputValue}</span>
                 </transition-group>
@@ -466,11 +475,10 @@ export default {
     },
     getTableComp(tableOptions) {
       const { headOptions = {}, bodyOptions = {}, attrs = {}, useThead = false } = tableOptions;
-      const { handleMouseleave, handleMouseup, handleMousedown } = this;
+      const { handleMouseleave, handleMouseup } = this;
       const listeners = {
         mouseleave: handleMouseleave,
         mouseup: handleMouseup,
-        mousedown: handleMousedown,
         click: function (e) {
           console.log("table inputListeners");
           e.stopPropagation();
@@ -501,7 +509,6 @@ export default {
     return (
       <div class="designTableWrapper" oncontextmenu={handleContextmenu} ref={formRef}>
         {getTableComp(options)}
-        {/* {getSelectRangeComp()} */}
       </div>
     );
   }
