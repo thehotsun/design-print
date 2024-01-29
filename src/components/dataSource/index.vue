@@ -7,7 +7,7 @@
           <el-tab-pane name="componentLib">
             <span slot="label">表单字段</span>
             <el-collapse v-model="activeNames" class="widget-collapse">
-              <el-collapse-item name="1" :title="'ss'">
+              <el-collapse-item name="1" :title="'测试字段'">
                 <draggable
                   tag="ul"
                   ghost-class="ghost"
@@ -62,7 +62,7 @@ export default {
     loadWidgets() {
       this.basicFields = [
         {
-          type: "text",
+          type: "值1",
           alias: "",
           icon: "text-field",
           formItemFlag: true,
@@ -73,7 +73,7 @@ export default {
           displayName: "单行输入"
         },
         {
-          type: "textarea",
+          type: "值2",
           icon: "textarea-field",
           formItemFlag: true,
           options: {
@@ -83,7 +83,7 @@ export default {
           displayName: "多行输入"
         },
         {
-          type: "number",
+          type: "值3",
           icon: "number-field",
           formItemFlag: true,
           options: {

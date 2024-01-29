@@ -41,3 +41,11 @@ export default {
   methods: {}
 };
 </script>
+
+<style lang="less" scoped>
+::v-deep ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+</style>

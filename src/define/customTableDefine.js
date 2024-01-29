@@ -76,7 +76,8 @@ export function TdDefine({ colIndex, rowIndex, isHead }) {
       colspan: 1,
       rowspan: 1,
       "data-colindex": colIndex,
-      "data-rowindex": rowIndex
+      "data-rowindex": rowIndex,
+      style: {}
     },
     options: {
       isDelete: 0,

@@ -27,7 +27,12 @@ export default {
       showInputAxis: {
         rowIndex: 0,
         colIndex: 0
-      }
+      },
+      draggingColumn: {
+        rowIndex: 0,
+        colIndex: 0
+      },
+      dragging: false
     };
   },
 
@@ -44,6 +49,8 @@ export default {
           {
             name: "合并单元格",
             onClick: function (e) {
+              e.stopPropagation();
+              that.hideMenu();
               console.log("menu1 clicked", e);
               that.mergeCell();
             }
@@ -51,6 +58,8 @@ export default {
           {
             name: "左侧插入列",
             onClick: function (e) {
+              e.stopPropagation();
+              that.hideMenu();
               console.log("menu2 clicked", e);
               that.leftInsertColumn();
             }
@@ -58,34 +67,52 @@ export default {
           {
             name: "右侧插入列",
             onClick: function (e) {
+              e.stopPropagation();
+              that.hideMenu();
               that.rightInsertColumn();
               console.log("menu3 clicked", e);
             }
           },
           {
+            // TODO 合并状态下插入行有问题
+
             name: "上方插入行",
             onClick: function (e) {
+              e.stopPropagation();
+              that.hideMenu();
               that.topInsertRow();
               console.log("menu3 clicked", e);
             }
           },
           {
+            // TODO 合并状态下插入行有问题
+
             name: "下方插入行",
             onClick: function (e) {
+              e.stopPropagation();
+              that.hideMenu();
               that.bottomInsertRow();
               console.log("menu2 clicked", e);
             }
           },
           {
+            // TODO 合并状态删除行有问题
+
             name: "删除行",
             onClick: function (e) {
+              e.stopPropagation();
+              that.hideMenu();
               that.delRow();
               console.log("menu3 clicked", e);
             }
           },
           {
+            // TODO 合并状态删除列有问题
+
             name: "删除列",
             onClick: function (e) {
+              e.stopPropagation();
+              that.hideMenu();
               that.delColumn();
               console.log("menu2 clicked", e);
             }
@@ -93,6 +120,8 @@ export default {
           {
             name: "清除内容",
             onClick: function (e) {
+              e.stopPropagation();
+              that.hideMenu();
               that.clearValue();
               console.log("menu3 clicked", e);
             }
@@ -259,9 +288,9 @@ export default {
       }
       return result;
     },
-    handleMouseenter(e) {
+    handleTdMouseenter(e) {
       if (this.isProcessing) {
-        console.log(this.isProcessing, "handleMouseenter", e.currentTarget);
+        console.log(this.isProcessing, "handleTdMouseenter", e.currentTarget);
         const {
           rowSpan,
           colSpan,
@@ -282,11 +311,34 @@ export default {
       this.selectRange.colEndIndex = 0;
       this.selectRange.source = "";
     },
+    handleTdMouseMove(e) {
+      if (this.dragging) return;
+      const { currentTarget } = e;
+      const { rowindex, colindex } = currentTarget.dataset;
+      let rect = currentTarget.getBoundingClientRect();
+      const bodyStyle = document.body.style;
+      // 这个8要和td的padding-left一致
+      if (rect.width > 12 && rect.right - e.pageX < 8) {
+        bodyStyle.cursor = "col-resize";
+        currentTarget.style.cursor = "col-resize";
+        this.draggingColumn = {
+          rowIndex: rowindex,
+          colIndex: colindex
+        };
+      } else if (!this.dragging) {
+        bodyStyle.cursor = "";
+        currentTarget.style.cursor = "";
+        this.draggingColumn = {
+          rowIndex: 0,
+          colIndex: 0
+        };
+      }
+    },
     handleMouseup() {
       // clearTimeout(this.timer);
       this.isProcessing = false;
     },
-    handleMousedown(e) {
+    handleTdMousedown(e) {
       // event.button==0 默认。没有按任何按钮。
       // event.button==1 鼠标左键
       // event.button==2 鼠标右键
@@ -297,21 +349,86 @@ export default {
       // event.button==7 所有三个键都按下
       // clearTimeout(this.timer);
       if ([0, 1].includes(e.button)) {
-        this.isProcessing = true;
-        const { rowindex, colindex } = e.currentTarget.dataset;
-        console.log("handleMousedown", e.currentTarget, rowindex, colindex);
-        this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = rowindex * 1;
-        this.selectRange.colEndIndex = this.selectRange.colStartIndex = colindex * 1;
-        this.selectRange.source = "leftClickSelect";
-        this.hideMenu();
+        const {
+          draggingColumn: { rowIndex, colIndex },
+          options
+        } = this;
+        // 此时为拖拽事件
+        if (rowIndex > 0 && colIndex > 0) {
+          const {
+            dataset: { rowindex, colindex }
+          } = e.currentTarget;
+          this.dragging = true;
+          const tableLeft = this.$refs.designPrintTable.getBoundingClientRect().left;
+          const columnRect = e.currentTarget.getBoundingClientRect();
+          //  const minLeft = columnRect.left - tableLeft + 30;
+          const dragState = {
+            startMouseLeft: e.clientX,
+            startLeft: columnRect.right - tableLeft,
+            startColumnLeft: columnRect.left - tableLeft,
+            tableLeft,
+            columnWidth: columnRect.width
+          };
+          document.onselectstart = function () {
+            return false;
+          };
+          document.ondragstart = function () {
+            return false;
+          };
+          console.log(dragState, dragState.columnWidth);
+
+          const handleMouseMove = (event) => {
+            const deltaLeft = event.clientX - dragState.startMouseLeft;
+            console.log(deltaLeft);
+            const target = options.bodyOptions.trList[rowindex - 1].tdList[colindex - 1];
+            // TODO td最小宽高，px转换mm
+            this.$set(target.attrs.style, "width", dragState.columnWidth + deltaLeft + "px !important");
+          };
+
+          const handleMouseUp = () => {
+            if (this.dragging) {
+              document.body.style.cursor = "";
+              this.dragging = false;
+              this.draggingColumn = {
+                rowInde: 0,
+                colIndex: 0
+              };
+            }
+
+            document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("mouseup", handleMouseUp);
+            document.onselectstart = null;
+            document.ondragstart = null;
+          };
+          document.addEventListener("mousemove", handleMouseMove);
+          document.addEventListener("mouseup", handleMouseUp);
+        } else {
+          this.isProcessing = true;
+          const { rowindex, colindex } = e.currentTarget.dataset;
+          console.log("handleTdMousedown", e.currentTarget, rowindex, colindex);
+          this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = rowindex * 1;
+          this.selectRange.colEndIndex = this.selectRange.colStartIndex = colindex * 1;
+          this.selectRange.source = "leftClickSelect";
+          this.hideMenu();
+        }
       }
     },
 
-    handleDblclick(e) {
+    handleTdclick(e) {
       const {
         dataset: { rowindex, colindex }
       } = e.currentTarget;
-      console.log("handleDblclick", e.currentTarget);
+      const { rowIndex, colIndex } = this.showInputAxis;
+      if (rowIndex !== 0 && colIndex !== 0 && (rowindex * 1 !== rowIndex || colindex * 1 !== colIndex)) {
+        this.resetShowInputAxis();
+      }
+    },
+
+    handleTdDblclick(e) {
+      const {
+        dataset: { rowindex, colindex }
+      } = e.currentTarget;
+      console.log("handleTdDblclick", e.currentTarget);
       this.showInputAxis.rowIndex = rowindex * 1;
       this.showInputAxis.colIndex = colindex * 1;
       this.resetSelectRange();
@@ -358,13 +475,18 @@ export default {
       return true;
     },
     getTdComp(tdOptions) {
-      const { attrs = {}, options = {} } = tdOptions;
       const {
-        handleMouseenter,
-        handleMousedown,
+        attrs: { style, ...attrs },
+        options = {}
+      } = tdOptions;
+      const {
+        handleTdMouseenter,
+        handleTdMousedown,
+        handleTdMouseMove,
         checkIsSelect,
         checkShowInput,
-        handleDblclick,
+        handleTdDblclick,
+        handleTdclick,
         handleContextmenu,
         showInputAxis: { rowIndex, colIndex },
         checkMove,
@@ -373,9 +495,11 @@ export default {
         onDragEnd
       } = this;
       const listeners = {
-        mousedown: handleMousedown,
-        mouseenter: handleMouseenter,
-        dblclick: handleDblclick,
+        mousedown: handleTdMousedown,
+        mouseenter: handleTdMouseenter,
+        mousemove: handleTdMouseMove,
+        dblclick: handleTdDblclick,
+        click: handleTdclick,
         contextmenu: handleContextmenu
       };
       const inputListeners = {
@@ -383,7 +507,7 @@ export default {
           console.log("change");
         }
       };
-      const length = this.options.bodyOptions.trList[0].tdList.length;
+      // const length = this.options.bodyOptions.trList[0].tdList.length;
       // TODO style这里table默认宽度187是否需要更改？
       return (
         <td
@@ -391,8 +515,8 @@ export default {
             attrs,
             on: listeners
           }}
+          style={style}
           class={checkIsSelect({ colIndex: attrs["data-colindex"], rowIndex: attrs["data-rowindex"] }) ? "selected" : ""}
-          style={{ width: 187 / length + "mm" }}
         >
           <div class="tdContent">
             {checkShowInput(attrs, rowIndex, colIndex) ? (
@@ -418,9 +542,9 @@ export default {
                 onupdate={onDragUpdate}
               >
                 <transition-group name="fade" tag="div" class="valList">
-                  {options.dragValList.map((item, index) => {
+                  {options.dragValList.map((item) => {
                     return (
-                      <span style="" key={index}>
+                      <span style="" key={item.id}>
                         {item.id}
                       </span>
                     );
@@ -507,6 +631,7 @@ export default {
             attrs,
             on: listeners
           }}
+          ref="designPrintTable"
         >
           {useThead ? getTheadComp(headOptions) : ""}
           {getTbodyComp(bodyOptions)}
