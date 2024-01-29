@@ -1,5 +1,5 @@
 import "./index.less";
-import { ContextMenu } from "@/utils/index";
+import { ContextMenu, findNearestTd } from "@/utils/index";
 import { TrDefine, TdDefine } from "@/define/customTableDefine";
 import Draggable from "vuedraggable";
 
@@ -32,7 +32,8 @@ export default {
         rowIndex: 0,
         colIndex: 0
       },
-      dragging: false
+      dragging: false,
+      curTd: {}
     };
   },
 
@@ -285,6 +286,7 @@ export default {
         this.$nextTick(() => {
           this.$refs[`${rowIndex}${colIndex}`].focus();
         });
+        this.curTd = this.options.bodyOptions.trList[rowIndex - 1]?.tdList[colIndex - 1];
       }
       return result;
     },
@@ -458,12 +460,21 @@ export default {
       this.showMenu(e);
     },
     setRenderOptions() {},
+    handleInputMousedown(e) {
+      e.stopPropagation();
+    },
     onDragEnd(evt) {
       console.log("drag end", evt);
     },
 
     onDragAdd(evt) {
-      console.log("onDragAdd", evt);
+      const tdNode = findNearestTd(evt.to);
+      const { rowindex, colindex } = tdNode.dataset;
+      const target = this.options.bodyOptions.trList[rowindex - 1]?.tdList[colindex - 1];
+      this.$nextTick(() => {
+        target.options.inputValue = target.options.dragValList.join("");
+      });
+      console.log("onDragAdd", evt.to.tagName);
     },
 
     onDragUpdate(evt) {
@@ -483,6 +494,7 @@ export default {
         handleTdMouseenter,
         handleTdMousedown,
         handleTdMouseMove,
+        handleInputMousedown,
         checkIsSelect,
         checkShowInput,
         handleTdDblclick,
@@ -492,7 +504,8 @@ export default {
         checkMove,
         onDragUpdate,
         onDragAdd,
-        onDragEnd
+        onDragEnd,
+        curTd
       } = this;
       const listeners = {
         mousedown: handleTdMousedown,
@@ -503,10 +516,26 @@ export default {
         contextmenu: handleContextmenu
       };
       const inputListeners = {
-        change: function () {
-          console.log("change");
+        change: function (val) {
+          const reg = /\$\{[^}]*\}/g;
+          const arr = val.split(reg);
+          const found = val.match(reg);
+          const dragValList = [];
+          console.log(arr, found);
+          for (let index = 0; index < arr.length; index++) {
+            const value = arr[index];
+            if (value) {
+              dragValList.push(value);
+            }
+            if (index < arr.length - 1) {
+              dragValList.push(found[index]);
+            }
+          }
+          curTd.options.dragValList = dragValList;
+          console.log("change", val, curTd.options.dragValList);
         }
       };
+
       // const length = this.options.bodyOptions.trList[0].tdList.length;
       // TODO style这里table默认宽度187是否需要更改？
       return (
@@ -522,9 +551,10 @@ export default {
             {checkShowInput(attrs, rowIndex, colIndex) ? (
               <el-input
                 {...{
-                  attrs
+                  attrs,
+                  on: inputListeners
                 }}
-                on={inputListeners}
+                nativeOnMousedown={handleInputMousedown}
                 v-model={options.inputValue}
                 ref={"" + rowIndex + colIndex}
               ></el-input>
@@ -542,14 +572,13 @@ export default {
                 onupdate={onDragUpdate}
               >
                 <transition-group name="fade" tag="div" class="valList">
-                  {options.dragValList.map((item) => {
+                  {options.dragValList.map((fieldExpression, index) => {
                     return (
-                      <span style="" key={item.id}>
-                        {item.id}
+                      <span style="" key={index}>
+                        {fieldExpression}
                       </span>
                     );
                   })}
-                  <span key="inputValue">{options.inputValue}</span>
                 </transition-group>
               </draggable>
             )}

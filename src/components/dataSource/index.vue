@@ -7,19 +7,19 @@
           <el-tab-pane name="componentLib">
             <span slot="label">表单字段</span>
             <el-collapse v-model="activeNames" class="widget-collapse">
-              <el-collapse-item name="1" :title="'测试字段'">
+              <el-collapse-item v-for="(item, index) in basicFields" :name="index" :key="index" :title="item[0].fieldName">
                 <draggable
                   tag="ul"
                   ghost-class="ghost"
-                  :list="basicFields"
+                  :list="item"
                   :clone="handleFieldWidgetClone"
                   :move="checkFieldMove"
                   :sort="false"
                   :group="{ name: 'dragGroup', pull: 'clone', put: false }"
                   @end="onFieldDragEnd"
                 >
-                  <li v-for="(ctn, index) in basicFields" :key="index" class="container-widget-item" :title="ctn.displayName">
-                    <span>{{ getWidgetLabel(ctn) }}</span>
+                  <li v-for="(ctn, index) in item" :key="index" class="container-widget-item" :title="ctn.displayName">
+                    <span>{{ ctn.displayName }}</span>
                   </li>
                 </draggable>
               </el-collapse-item>
@@ -33,8 +33,8 @@
 
 <script>
 import Draggable from "vuedraggable";
-import { cloneDeep } from "lodash";
-import { generateId } from "@/utils/index";
+// import { cloneDeep } from "lodash";
+// import { generateId } from "@/utils/index";
 
 export default {
   name: "dataSource",
@@ -61,51 +61,61 @@ export default {
 
     loadWidgets() {
       this.basicFields = [
-        {
-          type: "值1",
-          alias: "",
-          icon: "text-field",
-          formItemFlag: true,
-          options: {
-            name: "",
-            label: ""
+        [
+          {
+            type: "",
+            alias: "",
+            icon: "text-field",
+            displayName: "标题",
+            fieldName: "值1",
+            fieldExpression: "${值1.name}",
+            id: ""
           },
-          displayName: "单行输入"
-        },
-        {
-          type: "值2",
-          icon: "textarea-field",
-          formItemFlag: true,
-          options: {
-            name: "",
-            label: ""
+          {
+            id: "",
+            type: "",
+            alias: "",
+            icon: "text-field",
+            displayName: "值",
+            fieldName: "值1",
+            fieldExpression: "${值1.value}"
+          }
+        ],
+        [
+          {
+            type: "",
+            alias: "",
+            icon: "text-field",
+            displayName: "标题",
+            fieldName: "值2",
+
+            fieldExpression: "${值2.name}",
+            id: ""
           },
-          displayName: "多行输入"
-        },
-        {
-          type: "值3",
-          icon: "number-field",
-          formItemFlag: true,
-          options: {
-            name: "",
-            label: ""
-          },
-          displayName: "计数器"
-        }
+          {
+            id: "",
+            type: "",
+            alias: "",
+            icon: "text-field",
+            displayName: "值",
+            fieldName: "值2",
+            fieldExpression: "${值2.value}"
+          }
+        ]
       ];
+      this.activeNames = [];
+      this.basicFields.map((item, index) => {
+        this.activeNames.push(index);
+      });
     },
 
     handleFieldWidgetClone(origin) {
       console.log("origin", origin);
-      let newWidget = cloneDeep(origin);
-      let tempId = generateId();
-      newWidget.id = newWidget.type.replace(/-/g, "") + tempId;
-      newWidget.options.name = newWidget.id;
-      newWidget.options.label = newWidget.options.label || newWidget.type.toLowerCase();
-
-      delete newWidget.displayName;
-      console.log("newWidget", newWidget);
-      return newWidget;
+      // let newWidget = cloneDeep(origin);
+      // let tempId = generateId();
+      // newWidget.id = tempId;
+      // console.log("newWidget", newWidget);
+      return origin.fieldExpression;
     },
 
     /* draggable组件的move钩子是在内部子组件被拖放到其他draggable组件时触发！！ */

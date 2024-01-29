@@ -34,3 +34,10 @@ export function ContextMenu(options) {
 export const generateId = function () {
   return Math.floor(Math.random() * 100000 + Math.random() * 20000 + Math.random() * 5000);
 };
+
+export function findNearestTd(el) {
+  while (el && el.tagName !== "TD") {
+    el = el.parentNode;
+  }
+  return el;
+}
