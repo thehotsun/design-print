@@ -149,7 +149,7 @@ export default {
         }
       } = this;
       if (colStartIndex === colEndIndex && rowStartIndex === rowEndIndex) return;
-      const target = trList[rowStartIndex - 1].tdList[colStartIndex - 1];
+      const target = this.getAxisTd(rowStartIndex - 1, colStartIndex - 1);
       const colspan = colEndIndex - colStartIndex + 1;
       const rowspan = rowEndIndex - rowStartIndex + 1;
       target.attrs.colspan = colspan;
@@ -286,7 +286,7 @@ export default {
         this.$nextTick(() => {
           this.$refs[`${rowIndex}${colIndex}`].focus();
         });
-        this.curTd = this.options.bodyOptions.trList[rowIndex - 1]?.tdList[colIndex - 1];
+        this.curTd = this.getAxisTd(rowIndex - 1, colIndex - 1);
       }
       return result;
     },
@@ -352,8 +352,7 @@ export default {
       // clearTimeout(this.timer);
       if ([0, 1].includes(e.button)) {
         const {
-          draggingColumn: { rowIndex, colIndex },
-          options
+          draggingColumn: { rowIndex, colIndex }
         } = this;
         // 此时为拖拽事件
         if (rowIndex > 0 && colIndex > 0) {
@@ -382,7 +381,7 @@ export default {
           const handleMouseMove = (event) => {
             const deltaLeft = event.clientX - dragState.startMouseLeft;
             console.log(deltaLeft);
-            const target = options.bodyOptions.trList[rowindex - 1].tdList[colindex - 1];
+            const target = this.getAxisTd(rowindex - 1, colindex - 1);
             // TODO td最小宽高，px转换mm
             this.$set(target.attrs.style, "width", dragState.columnWidth + deltaLeft + "px !important");
           };
@@ -460,6 +459,16 @@ export default {
       this.showMenu(e);
     },
     setRenderOptions() {},
+    getAxisTd(rowIndex, colIndex) {
+      let targetTd;
+      try {
+        targetTd = this.options.bodyOptions.trList[rowIndex - 1]?.tdList[colIndex - 1];
+      } catch (error) {
+        console.error("根据坐标获取td报错，报错信息:", error);
+        targetTd = {};
+      }
+      return targetTd;
+    },
     handleInputMousedown(e) {
       e.stopPropagation();
     },
@@ -470,8 +479,9 @@ export default {
     onDragAdd(evt) {
       const tdNode = findNearestTd(evt.to);
       const { rowindex, colindex } = tdNode.dataset;
-      const target = this.options.bodyOptions.trList[rowindex - 1]?.tdList[colindex - 1];
+      const target = this.getAxisTd(rowindex - 1, colindex - 1);
       this.$nextTick(() => {
+        // 这里进行数组值和input值得映射
         target.options.inputValue = target.options.dragValList.join("");
       });
       console.log("onDragAdd", evt.to.tagName);
@@ -517,11 +527,11 @@ export default {
       };
       const inputListeners = {
         change: function (val) {
+          // 这里进行input值和数组值得映射
           const reg = /\$\{[^}]*\}/g;
           const arr = val.split(reg);
           const found = val.match(reg);
           const dragValList = [];
-          console.log(arr, found);
           for (let index = 0; index < arr.length; index++) {
             const value = arr[index];
             if (value) {
@@ -536,7 +546,6 @@ export default {
         }
       };
 
-      // const length = this.options.bodyOptions.trList[0].tdList.length;
       // TODO style这里table默认宽度187是否需要更改？
       return (
         <td

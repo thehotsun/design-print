@@ -1,6 +1,5 @@
 <template>
   <div class="design_print_data_source">
-    数据
     <el-scrollbar class="side-scroll-bar">
       <div class="panel-container">
         <el-tabs v-model="firstTab" class="no-bottom-margin indent-left-margin">
