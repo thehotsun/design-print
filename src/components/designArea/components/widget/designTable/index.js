@@ -211,7 +211,8 @@ export default {
         selectRange: { rowEndIndex },
         options: {
           bodyOptions: { trList }
-        }
+        },
+        mergeCell
       } = this;
       const operateTdList = [];
       const column = trList[0].tdList.length;
@@ -252,6 +253,11 @@ export default {
       }
       trList.splice(rowEndIndex, 0, tr);
       this.resetAxisInfo();
+      this.$nextTick(() => {
+        operateTdList.map((operateInfo) => {
+          mergeCell(operateInfo);
+        });
+      });
     },
     topInsertRow() {
       const {
@@ -431,9 +437,9 @@ export default {
         }
         item.tdList.splice(colStartIndex - 1, 0, td);
       });
-      this.resetAxisInfo();
       this.selectRange.colStartIndex++;
       this.selectRange.colEndIndex++;
+      this.resetAxisInfo();
       this.$nextTick(() => {
         operateTdList.map((operateInfo) => {
           mergeCell(operateInfo);
@@ -768,7 +774,7 @@ export default {
           style={style}
           class={checkIsSelect({ colIndex: attrs["data-colindex"], rowIndex: attrs["data-rowindex"] }) ? "selected" : ""}
         >
-          <div class="tdContent">
+          <div class="tdContent" style={{ background: attrs.rowspan > 1 || attrs.colspan > 1 ? "#fff" : "" }}>
             {checkShowInput(attrs, rowIndex, colIndex) ? (
               <el-input
                 {...{
