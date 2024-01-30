@@ -141,15 +141,12 @@ export default {
       this.showInputAxis.rowIndex = 0;
       this.showInputAxis.colIndex = 0;
     },
-    mergeCell() {
-      const {
-        selectRange: { colStartIndex, rowStartIndex, rowEndIndex, colEndIndex },
-        options: {
-          bodyOptions: { trList }
-        }
-      } = this;
+    mergeCell(range) {
+      range = range || this.selectRange;
+      const { colStartIndex, rowStartIndex, rowEndIndex, colEndIndex } = range;
       if (colStartIndex === colEndIndex && rowStartIndex === rowEndIndex) return;
       const target = this.getAxisTd(rowStartIndex - 1, colStartIndex - 1);
+      console.log("target", target);
       const colspan = colEndIndex - colStartIndex + 1;
       const rowspan = rowEndIndex - rowStartIndex + 1;
       target.attrs.colspan = colspan;
@@ -159,15 +156,18 @@ export default {
         if (index === 0) {
           tdIndex = colStartIndex;
           length = colspan - 1;
-          // trList[rowStartIndex - 1 + index].tdList.splice(colStartIndex, colspan - 1);
         } else {
           tdIndex = colStartIndex - 1;
           length = colspan;
-          // trList[rowStartIndex - 1 + index].tdList.splice(colStartIndex - 1, colspan);
         }
         for (let j = 0; j < length; j++) {
-          const options = trList[rowStartIndex - 1 + index].tdList[tdIndex * 1 + j].options;
+          const target = this.getAxisTd(rowStartIndex - 1 + index, tdIndex * 1 + j);
+          const { options, attrs } = target;
           options.isDelete = 1;
+          options.mergeNodeAxis.rowIndex = rowStartIndex;
+          options.mergeNodeAxis.colIndex = colStartIndex;
+          attrs.rowspan = 1;
+          attrs.colspan = 1;
         }
       }
     },
@@ -213,47 +213,165 @@ export default {
           bodyOptions: { trList }
         }
       } = this;
+      const operateTdList = [];
       const column = trList[0].tdList.length;
-      trList.splice(rowEndIndex, 0, new TrDefine(column, rowEndIndex + 1));
-      for (let index = rowEndIndex + 1; index < trList.length; index++) {
-        trList[index].tdList.map((item) => {
-          item.attrs["data-rowindex"]++;
-        });
+      let tr = new TrDefine(column, rowEndIndex + 1);
+      if (rowEndIndex < trList.length) {
+        const formTdList = trList[rowEndIndex].tdList;
+        for (let index = 0; index < formTdList.length; index++) {
+          const formTd = formTdList[index];
+          let {
+            options: {
+              isDelete,
+              mergeNodeAxis: { rowIndex, colIndex }
+            },
+            attrs: { rowspan, colspan }
+          } = formTd;
+          if (isDelete || rowspan > 1 || colspan > 1) {
+            const target = this.getAxisTd(rowIndex - 1, colIndex - 1);
+            const {
+              attrs: { rowspan, colspan }
+            } = target;
+            const operateInfo = {
+              colStartIndex: colIndex,
+              rowStartIndex: rowIndex,
+              rowEndIndex: rowspan * 1 + rowIndex,
+              colEndIndex: colspan - 1 + colIndex
+            };
+
+            // 没有相同坐标则说明是新的需要操作的yd
+            if (
+              !operateTdList.some((item) => {
+                return item.colStartIndex === operateInfo.colStartIndex && item.rowStartIndex === operateInfo.rowStartIndex;
+              })
+            ) {
+              operateTdList.push(operateInfo);
+            }
+          }
+        }
       }
+      trList.splice(rowEndIndex, 0, tr);
+      this.resetAxisInfo();
     },
     topInsertRow() {
       const {
         selectRange: { rowStartIndex },
         options: {
           bodyOptions: { trList }
-        }
+        },
+        mergeCell
       } = this;
+      const operateTdList = [];
       const column = trList[0].tdList.length;
-      trList.splice(rowStartIndex - 1, 0, new TrDefine(column, rowStartIndex));
-      for (let index = rowStartIndex; index < trList.length; index++) {
-        trList[index].tdList.map((item) => {
-          item.attrs["data-rowindex"]++;
-        });
+      let formIndex = rowStartIndex - 2;
+      let tr = new TrDefine(column, rowStartIndex);
+
+      if (formIndex >= 0) {
+        const formTdList = trList[formIndex].tdList;
+        for (let index = 0; index < formTdList.length; index++) {
+          const formTd = formTdList[index];
+          let {
+            options: {
+              isDelete,
+              mergeNodeAxis: { rowIndex, colIndex }
+            },
+            attrs: { rowspan, colspan }
+          } = formTd;
+          if (isDelete || rowspan > 1 || colspan > 1) {
+            const target = this.getAxisTd(rowIndex - 1, colIndex - 1);
+            const {
+              attrs: { rowspan, colspan }
+            } = target;
+            const operateInfo = {
+              colStartIndex: colIndex,
+              rowStartIndex: rowIndex,
+              rowEndIndex: rowspan * 1 + rowIndex,
+              colEndIndex: colspan - 1 + colIndex
+            };
+
+            // 没有相同坐标则说明是新的需要操作的yd
+            if (
+              !operateTdList.some((item) => {
+                return item.colStartIndex === operateInfo.colStartIndex && item.rowStartIndex === operateInfo.rowStartIndex;
+              })
+            ) {
+              operateTdList.push(operateInfo);
+            }
+          }
+        }
       }
+      trList.splice(rowStartIndex - 1, 0, tr);
+      this.resetAxisInfo();
       this.selectRange.rowStartIndex++;
       this.selectRange.rowEndIndex++;
+      this.$nextTick(() => {
+        operateTdList.map((operateInfo) => {
+          mergeCell(operateInfo);
+        });
+      });
     },
     rightInsertColumn() {
       const {
         selectRange: { colEndIndex },
         options: {
           bodyOptions: { trList }
-        }
+        },
+        mergeCell
       } = this;
+      const operateTdList = [];
       trList.map((item) => {
-        const {
-          options: { isHead },
-          attrs
-        } = item.tdList[0];
-        item.tdList.splice(colEndIndex, 0, new TdDefine({ colIndex: colEndIndex + 1, rowIndex: attrs["data-rowindex"], isHead }));
-        for (let index = colEndIndex + 1; index < item.tdList.length; index++) {
-          item.tdList[index].attrs["data-colindex"]++;
+        let td;
+        // 如果等于长度，相当于新加一行初始行，
+        if (colEndIndex === trList[0].tdList.length) {
+          const {
+            options: { isHead },
+            attrs
+          } = item.tdList[0];
+          td = new TdDefine({ colIndex: colEndIndex + 1, rowIndex: attrs["data-rowindex"], isHead });
+        } else {
+          const {
+            options: {
+              isHead,
+              isDelete,
+              mergeNodeAxis: { rowIndex, colIndex }
+            },
+            attrs,
+            attrs: { colspan, rowspan }
+          } = item.tdList[colEndIndex];
+          td = new TdDefine({ colIndex: colEndIndex + 1, rowIndex: attrs["data-rowindex"], isHead });
+          // 否则要复制目标行的某些信息
+          // 如果当前td被合并，则需要复制相关合并信息
+          if (isDelete || colspan > 1 || rowspan > 1) {
+            const target = this.getAxisTd(rowIndex - 1, colIndex - 1);
+            const {
+              attrs: { rowspan, colspan }
+            } = target;
+            const operateInfo = {
+              colStartIndex: colIndex,
+              rowStartIndex: rowIndex,
+              rowEndIndex: rowspan - 1 + rowIndex,
+              colEndIndex: colspan * 1 + colIndex
+            };
+            console.log(rowIndex, colIndex, rowspan, colspan, operateInfo);
+
+            // 没有相同坐标则说明是新的需要操作的yd
+            if (
+              !operateTdList.some((item) => {
+                return item.colStartIndex === operateInfo.colStartIndex && item.rowStartIndex === operateInfo.rowStartIndex;
+              })
+            ) {
+              operateTdList.push(operateInfo);
+            }
+          }
         }
+        item.tdList.splice(colEndIndex, 0, td);
+      });
+      this.resetAxisInfo();
+      this.$nextTick(() => {
+        console.log(operateTdList);
+        operateTdList.map((operateInfo) => {
+          mergeCell(operateInfo);
+        });
       });
     },
     leftInsertColumn() {
@@ -261,21 +379,103 @@ export default {
         selectRange: { colStartIndex },
         options: {
           bodyOptions: { trList }
-        }
+        },
+        mergeCell
       } = this;
+      const operateTdList = [];
       trList.map((item) => {
-        const {
-          options: { isHead },
-          attrs
-        } = item.tdList[0];
-        item.tdList.splice(colStartIndex - 1, 0, new TdDefine({ colIndex: colStartIndex, rowIndex: attrs["data-rowindex"], isHead }));
-        for (let index = colStartIndex; index < item.tdList.length; index++) {
-          item.tdList[index].attrs["data-colindex"]++;
+        let td;
+        let index = colStartIndex - 2;
+        // 如果小于0，相当于新加一行初始行，
+        if (index < 0) {
+          index = 0;
+          const {
+            options: { isHead },
+            attrs
+          } = item.tdList[index];
+          td = new TdDefine({ colIndex: colStartIndex, rowIndex: attrs["data-rowindex"], isHead });
+        } else {
+          let {
+            options: {
+              isHead,
+              isDelete,
+              mergeNodeAxis: { rowIndex, colIndex }
+            },
+            attrs,
+            attrs: { colspan, rowspan }
+          } = item.tdList[index];
+          td = new TdDefine({ colIndex: colStartIndex, rowIndex: attrs["data-rowindex"], isHead });
+          // 否则要复制目标行的某些信息
+          // 如果当前td被合并，则需要复制相关合并信息
+          if (isDelete || colspan > 1 || rowspan > 1) {
+            const target = this.getAxisTd(rowIndex - 1, colIndex - 1);
+            const {
+              attrs: { rowspan, colspan }
+            } = target;
+            const operateInfo = {
+              colStartIndex: colIndex,
+              rowStartIndex: rowIndex,
+              rowEndIndex: rowspan - 1 + rowIndex,
+              colEndIndex: colspan * 1 + colIndex
+            };
+
+            // 没有相同坐标则说明是新的需要操作的yd
+            if (
+              !operateTdList.some((item) => {
+                return item.colStartIndex === operateInfo.colStartIndex && item.rowStartIndex === operateInfo.rowStartIndex;
+              })
+            ) {
+              operateTdList.push(operateInfo);
+            }
+          }
         }
+        item.tdList.splice(colStartIndex - 1, 0, td);
       });
+      this.resetAxisInfo();
       this.selectRange.colStartIndex++;
       this.selectRange.colEndIndex++;
+      this.$nextTick(() => {
+        operateTdList.map((operateInfo) => {
+          mergeCell(operateInfo);
+        });
+      });
     },
+    resetAxisInfo() {
+      const trList = this.options.bodyOptions.trList;
+      trList.map((trItem, trIndex) => {
+        trItem.tdList.map((tdItem, tdIndex) => {
+          tdItem.attrs["data-rowindex"] = trIndex + 1;
+          tdItem.attrs["data-colindex"] = tdIndex + 1;
+          const { rowspan, colspan } = tdItem.attrs;
+          if (!tdItem.options.isDelete) {
+            tdItem.options.mergeNodeAxis.colIndex = tdIndex + 1;
+            tdItem.options.mergeNodeAxis.rowIndex = trIndex + 1;
+          }
+          if (rowspan > 1 && colspan > 1) {
+            for (let index = 0; index < rowspan; index++) {
+              for (let j = 0; j < colspan; j++) {
+                const target = this.getAxisTd(trIndex + index, tdIndex + j);
+                target.options.mergeNodeAxis.colIndex = tdIndex + 1;
+                target.options.mergeNodeAxis.rowIndex = trIndex + 1;
+              }
+            }
+          } else if (rowspan > 1) {
+            for (let index = 0; index < rowspan; index++) {
+              const target = this.getAxisTd(trIndex + index, tdIndex);
+              target.options.mergeNodeAxis.colIndex = tdIndex + 1;
+              target.options.mergeNodeAxis.rowIndex = trIndex + 1;
+            }
+          } else if (colspan > 1) {
+            for (let index = 0; index < colspan; index++) {
+              const target = this.getAxisTd(trIndex, tdIndex + index);
+              target.options.mergeNodeAxis.colIndex = tdIndex + 1;
+              target.options.mergeNodeAxis.rowIndex = trIndex + 1;
+            }
+          }
+        });
+      });
+    },
+
     checkIsSelect({ colIndex, rowIndex }) {
       const { colStartIndex, rowStartIndex, rowEndIndex, colEndIndex } = this.selectRange;
       return colStartIndex <= colIndex && colEndIndex >= colIndex && rowStartIndex <= rowIndex && rowEndIndex >= rowIndex;
@@ -298,8 +498,8 @@ export default {
           colSpan,
           dataset: { rowindex, colindex }
         } = e.currentTarget;
-        this.selectRange.rowEndIndex = rowindex * 1 + (rowSpan * 1 - 1);
-        this.selectRange.colEndIndex = colindex * 1 + (colSpan * 1 - 1);
+        this.selectRange.rowEndIndex = rowindex - 1 + rowSpan * 1;
+        this.selectRange.colEndIndex = colindex - 1 + colSpan * 1;
       }
     },
     handleMouseleave() {
@@ -319,8 +519,8 @@ export default {
       const { rowindex, colindex } = currentTarget.dataset;
       let rect = currentTarget.getBoundingClientRect();
       const bodyStyle = document.body.style;
-      // 这个8要和td的padding-left一致
-      if (rect.width > 12 && rect.right - e.pageX < 8) {
+      // 这个8要和td的padding-left一致 只有第一行可以拖拽
+      if (rect.width > 12 && rect.right - e.pageX < 8 && rowindex === "1") {
         bodyStyle.cursor = "col-resize";
         currentTarget.style.cursor = "col-resize";
         this.draggingColumn = {
@@ -405,10 +605,16 @@ export default {
           document.addEventListener("mouseup", handleMouseUp);
         } else {
           this.isProcessing = true;
-          const { rowindex, colindex } = e.currentTarget.dataset;
+          const {
+            dataset: { rowindex, colindex },
+            colSpan,
+            rowSpan
+          } = e.currentTarget;
           console.log("handleTdMousedown", e.currentTarget, rowindex, colindex);
-          this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = rowindex * 1;
-          this.selectRange.colEndIndex = this.selectRange.colStartIndex = colindex * 1;
+          this.selectRange.rowEndIndex = rowindex - 1 + rowSpan * 1;
+          this.selectRange.rowStartIndex = rowindex * 1;
+          this.selectRange.colEndIndex = colindex - 1 + colSpan * 1;
+          this.selectRange.colStartIndex = colindex * 1;
           this.selectRange.source = "leftClickSelect";
           this.hideMenu();
         }
@@ -450,10 +656,16 @@ export default {
       e.preventDefault();
       const { source } = this.selectRange;
       if (source !== "leftClickSelect") {
-        const { rowindex, colindex } = e.currentTarget.dataset;
+        const {
+          dataset: { rowindex, colindex },
+          colSpan,
+          rowSpan
+        } = e.currentTarget;
         console.log("handleContextmenu", e.currentTarget, rowindex, colindex);
-        this.selectRange.rowStartIndex = this.selectRange.rowEndIndex = this.selectRange.rowStartIndex = rowindex * 1;
-        this.selectRange.colStartIndex = this.selectRange.colEndIndex = this.selectRange.colStartIndex = colindex * 1;
+        this.selectRange.rowEndIndex = rowindex - 1 + rowSpan * 1;
+        this.selectRange.rowStartIndex = rowindex * 1;
+        this.selectRange.colEndIndex = colindex - 1 + colSpan * 1;
+        this.selectRange.colStartIndex = colindex * 1;
         this.selectRange.source = "rightClickSelect";
       }
       this.showMenu(e);
@@ -462,7 +674,7 @@ export default {
     getAxisTd(rowIndex, colIndex) {
       let targetTd;
       try {
-        targetTd = this.options.bodyOptions.trList[rowIndex - 1]?.tdList[colIndex - 1];
+        targetTd = this.options.bodyOptions.trList[rowIndex]?.tdList[colIndex];
       } catch (error) {
         console.error("根据坐标获取td报错，报错信息:", error);
         targetTd = {};

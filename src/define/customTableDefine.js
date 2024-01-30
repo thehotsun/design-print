@@ -81,6 +81,10 @@ export function TdDefine({ colIndex, rowIndex, isHead }) {
     },
     options: {
       isDelete: 0,
+      mergeNodeAxis: {
+        colIndex,
+        rowIndex
+      },
       isHead,
       inputValue: "",
       dragValList: []
