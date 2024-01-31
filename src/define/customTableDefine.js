@@ -81,6 +81,7 @@ export function TdDefine({ colIndex, rowIndex, isHead }) {
     },
     options: {
       isDelete: 0,
+      // 当前td被展示或合并的td坐标
       mergeNodeAxis: {
         colIndex,
         rowIndex
