@@ -460,10 +460,11 @@ export default {
         mergeCell
       } = this;
       const operateTdList = [];
+      const curTdLength = trList[0].tdList.length;
       trList.map((item) => {
         let td;
         // 如果等于长度，相当于新加一行初始行，
-        if (colEndIndex === trList[0].tdList.length) {
+        if (colEndIndex === curTdLength) {
           const {
             options: { isHead },
             attrs
@@ -524,9 +525,9 @@ export default {
         mergeCell
       } = this;
       const operateTdList = [];
+      let index = colStartIndex - 2;
       trList.map((item) => {
         let td;
-        let index = colStartIndex - 2;
         // 如果小于0，相当于新加一行初始行，
         if (index < 0) {
           index = 0;
