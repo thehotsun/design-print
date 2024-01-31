@@ -115,8 +115,6 @@ export default {
             }
           },
           {
-            // TODO 合并状态删除行有问题
-
             name: "删除行",
             onClick: function (e) {
               e.stopPropagation();
@@ -222,12 +220,67 @@ export default {
         },
         resetSelectRange
       } = this;
-      trList.splice(rowStartIndex - 1, rowEndIndex - rowStartIndex + 1);
-      for (let index = rowStartIndex - 1; index < trList.length; index++) {
-        trList[index].tdList.map((item) => {
-          item.attrs["data-rowindex"] = index + 1;
+      const rawOperateTdList = [];
+      const delLength = rowEndIndex - rowStartIndex + 1;
+      const delRowArr = trList.slice(rowStartIndex - 1, rowEndIndex);
+      delRowArr.map((tr) => {
+        tr.tdList.map((td) => {
+          let {
+            options: {
+              isDelete,
+              mergeNodeAxis: { rowIndex, colIndex }
+            },
+            attrs: { colspan, rowspan }
+          } = td;
+          // 先遍历循环，吧所有需要操作得节点筛选出来
+          if (isDelete || colspan > 1 || rowspan > 1) {
+            const target = this.getAxisTd(rowIndex - 1, colIndex - 1);
+            const {
+              attrs: { rowspan, colspan }
+            } = target;
+
+            const rawOperateInfo = {
+              colStartIndex: colIndex,
+              rowStartIndex: rowIndex,
+              rowspan,
+              colspan
+            };
+
+            // 没有相同坐标则说明是新的需要操作的td
+            if (
+              !rawOperateTdList.some((item) => {
+                return item.colStartIndex === rawOperateInfo.colStartIndex && item.rowStartIndex === rawOperateInfo.rowStartIndex;
+              })
+            ) {
+              rawOperateTdList.push(rawOperateInfo);
+            }
+          }
         });
-      }
+      });
+      console.log("rawOperateTdList", rawOperateTdList);
+      rawOperateTdList.map((td) => {
+        // 坐标大于等于选中范围得坐标且尾坐标超出当前删除范围 更改 mergeNodeAxis,然后直接删除rowspan相应长度
+        if (td.rowStartIndex >= rowStartIndex && td.rowStartIndex + td.rowspan - 1 > rowEndIndex) {
+          const spanRecudeLength = rowEndIndex - td.rowStartIndex + 1;
+          const target = this.getAxisTd(rowEndIndex, td.colStartIndex - 1);
+          target.attrs.rowspan = td.rowspan - spanRecudeLength;
+          target.attrs.colspan = td.colspan;
+          target.options.isDelete = 0;
+          // 坐标小于删除范围得头坐标，直接删除rowspan相应长度
+        } else if (td.rowStartIndex < rowStartIndex) {
+          const originRowEndIndex = td.rowspan - 1 + td.rowStartIndex;
+          let spanRecudeLength;
+          if (originRowEndIndex < rowEndIndex) {
+            spanRecudeLength = originRowEndIndex - rowStartIndex + 1;
+          } else {
+            spanRecudeLength = delLength;
+          }
+          const target = this.getAxisTd(td.rowStartIndex - 1, td.colStartIndex - 1);
+          target.attrs.rowspan = target.attrs.rowspan - spanRecudeLength;
+        }
+      });
+      trList.splice(rowStartIndex - 1, delLength);
+      this.resetAxisInfo();
       // 删除后清空选中范围
       resetSelectRange();
     },
