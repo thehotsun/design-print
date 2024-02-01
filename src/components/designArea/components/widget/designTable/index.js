@@ -910,7 +910,7 @@ export default {
           style={style}
           class={checkIsSelect({ colIndex: attrs["data-colindex"], rowIndex: attrs["data-rowindex"] }) ? "selected" : ""}
         >
-          <div class="tdContent" style={{ background: attrs.rowspan > 1 || attrs.colspan > 1 ? "#fff" : "" }}>
+          <div class="tdContent" style={{ background: attrs.rowspan > 1 || attrs.colspan > 1 ? "#fff" : "", textDecoration: "underline" }}>
             {checkShowInput(attrs, rowIndex, colIndex) ? (
               <el-input
                 {...{
