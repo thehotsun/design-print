@@ -31,9 +31,9 @@ export function ContextMenu(options) {
   };
 }
 
-export const generateId = function () {
-  return Math.floor(Math.random() * 100000 + Math.random() * 20000 + Math.random() * 5000);
-};
+export const generateId = (randomLength = 10) => {
+  return Number(Math.random().toString().substring(2, randomLength) + Date.now()).toString(36);
+}
 
 export function findNearestTd(el) {
   while (el && el.tagName !== "TD") {
