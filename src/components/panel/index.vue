@@ -22,25 +22,25 @@
         <el-input-number v-model="form.fontSize" :min="1" :max="100"></el-input-number>
       </el-form-item>
       <el-form-item label="是否字体变粗">
-        <el-radio-group v-model="formData.isBold">
+        <el-radio-group v-model="form.isBold">
           <el-radio :label="true">是</el-radio>
           <el-radio :label="false">否</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="是否斜体">
-        <el-radio-group v-model="formData.isItalic">
+        <el-radio-group v-model="form.isItalic">
           <el-radio :label="true">是</el-radio>
           <el-radio :label="false">否</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="是否删除线">
-        <el-radio-group v-model="formData.isStrikethrough">
+        <el-radio-group v-model="form.isStrikethrough">
           <el-radio :label="true">是</el-radio>
           <el-radio :label="false">否</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="是否下划线">
-        <el-radio-group v-model="formData.isUnderline">
+        <el-radio-group v-model="form.isUnderline">
           <el-radio :label="true">是</el-radio>
           <el-radio :label="false">否</el-radio>
         </el-radio-group>
@@ -60,6 +60,10 @@ export default {
       form: {
         align: "",
         font: "",
+        isBold: false,
+        isItalic: false,
+        isStrikethrough: false,
+        isUnderline: false,
         fontSize: 12,
         fontWeight: "",
         bgColor: "",
