@@ -28,8 +28,9 @@ export default {
     setCurTabIndex(val) {
       designOptions.curTabIndex = val;
     },
-    setCurWidget(val) {
-      designOptions.curWidget = val;
+    setCurWidget(target, currentTarget) {
+      designOptions.curWidget.target = target;
+      designOptions.curWidget.currentTarget = currentTarget;
     },
     addTabData(index) {
       designOptions.renderOptionList.push(new TabDefine({ index }));

@@ -57,7 +57,7 @@
                   ></div
                 ></span>
                 <div class="widgetRenderArea">
-                  <div v-for="item in printWidgetList" :key="item.options.customAttrs.id">
+                  <div v-for="item in printWidgetList" :key="item.options.id">
                     <component :is="item.widgetType.type" :options="item.options"></component>
                   </div>
                 </div>

@@ -3,9 +3,9 @@ function TableDefine({ row, column, useThead = false }) {
   const bodyOptions = getBodyOptions({ row, column, useThead });
   return {
     options: {
+      id: +new Date(),
       // customAttrs对应右侧选中元素后展示的仪表盘
       customAttrs: {
-        id: +new Date(),
         left: 34.5,
         top: 112.5,
         height: 75,
@@ -88,8 +88,25 @@ export function TdDefine({ colIndex, rowIndex, isHead }) {
       },
       isHead,
       inputValue: "",
-      dragValList: []
+      dragValList: [],
+      styleForm: new StyleForm()
     }
   };
 }
+
+function StyleForm() {
+  return {
+    align: "middle",
+    verticalAlign: "verticalMiddle",
+    fontFamily: "SimSun",
+    isBold: false,
+    isItalic: false,
+    isStrikethrough: false,
+    isUnderline: false,
+    fontSize: 12,
+    backgroundColor: "#ffffff",
+    color: "#000000"
+  };
+}
+
 export default TableDefine;

@@ -2,11 +2,13 @@ import "./index.less";
 import { ContextMenu, findNearestTd } from "@/utils/index";
 import { TrDefine, TdDefine } from "@/define/customTableDefine";
 import Draggable from "vuedraggable";
+import mapObData from "@/mixins/mapObData";
 import { cloneDeep } from "lodash";
 
 export default {
   name: "designTable",
   components: { Draggable },
+  mixins: [mapObData],
   props: {
     onlyShow: Boolean,
     formData: Object,
@@ -22,6 +24,7 @@ export default {
         rowStartIndex: 0,
         rowEndIndex: 0,
         colEndIndex: 0,
+        // 用于左击也能选中当前td
         source: ""
       },
       isProcessing: false,
@@ -39,7 +42,26 @@ export default {
     };
   },
 
-  watch: {},
+  watch: {
+    // 处理setCurWidget事件
+    selectRange: {
+      deep: true,
+      handler(val) {
+        const { colStartIndex, rowStartIndex, rowEndIndex, colEndIndex } = val;
+        if (colStartIndex > 0 && colEndIndex > 0 && rowStartIndex > 0 && rowEndIndex > 0) {
+          const target = this.printWidgetList.find((item) => item.options === this.options);
+          const currentTarget = [];
+          for (let i = 0; i < rowEndIndex - rowStartIndex + 1; i++) {
+            for (let j = 0; j < colEndIndex - colStartIndex + 1; j++) {
+              const element = this.options.bodyOptions.trList[rowStartIndex + i - 1].tdList[colStartIndex + j - 1];
+              currentTarget.push(element);
+            }
+          }
+          this.setCurWidget(target, currentTarget);
+        }
+      }
+    }
+  },
   async created() {
     this.init();
   },
@@ -768,7 +790,7 @@ export default {
         dataset: { rowindex, colindex }
       } = e.currentTarget;
       const { rowIndex, colIndex } = this.showInputAxis;
-      if (rowIndex !== 0 && colIndex !== 0 && (rowindex * 1 !== rowIndex || colindex * 1 !== colIndex)) {
+      if (rowIndex > 0 && colIndex > 0 && (rowindex * 1 !== rowIndex || colindex * 1 !== colIndex)) {
         this.resetShowInputAxis();
       }
     },
