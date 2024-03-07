@@ -1,5 +1,5 @@
 import "./index.less";
-import { ContextMenu, findNearestTd } from "@/utils/index";
+import { ContextMenu, findNearestTd, mergeStyle } from "@/utils/index";
 
 import Draggable from "vuedraggable";
 import mapObData from "@/mixins/mapObData";
@@ -328,7 +328,7 @@ export default {
       return true;
     },
     getTdComp(tdOptions) {
-      const {
+      let {
         attrs: { style, ...attrs },
         options = {}
       } = tdOptions;
@@ -377,7 +377,7 @@ export default {
           console.log("change", val, curTd.options.dragValList);
         }
       };
-
+      const draggableStyle = mergeStyle("height: 100%;overflow-y: auto; display:flex;padding: 4px 10px;", options.styleForm);
       // TODO style这里table默认宽度187是否需要更改？
       return (
         <td
@@ -386,9 +386,8 @@ export default {
             on: listeners
           }}
           style={style}
-          class={checkIsSelect({ colIndex: attrs["data-colindex"], rowIndex: attrs["data-rowindex"] }) ? "selected" : ""}
         >
-          <div class="tdContent" style={{ background: attrs.rowspan > 1 || attrs.colspan > 1 ? "#fff" : "", textDecoration: "underline" }}>
+          <div class="tdContent" style={{ background: attrs.rowspan > 1 || attrs.colspan > 1 ? "#fff" : "" }}>
             {checkShowInput(attrs, rowIndex, colIndex) ? (
               <el-input
                 {...{
@@ -401,7 +400,10 @@ export default {
               ></el-input>
             ) : (
               <draggable
-                style="height: 100%;overflow-y: auto"
+                style={draggableStyle}
+                class={
+                  checkIsSelect({ colIndex: attrs["data-colindex"], rowIndex: attrs["data-rowindex"] }) ? (options.styleForm.backgroundColor ? "selected" : "selected black") : ""
+                }
                 group="dragGroup"
                 ghostClass="ghost"
                 handle=".drag-handler"
@@ -507,9 +509,6 @@ export default {
           {getTbodyComp(bodyOptions)}
         </table>
       );
-    },
-    getSelectRangeComp() {
-      return <div></div>;
     }
   },
 

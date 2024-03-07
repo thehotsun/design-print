@@ -5,17 +5,17 @@
         <el-color-picker v-model="form.backgroundColor"></el-color-picker>
       </el-form-item>
       <el-form-item label="左右对齐">
-        <el-select v-model="form.align" placeholder="请选择对齐方式">
-          <el-option label="左对齐" value="left"></el-option>
-          <el-option label="中间对齐" value="middle"></el-option>
-          <el-option label="右对齐" value="right"></el-option>
+        <el-select v-model="form.textAlign" placeholder="请选择对齐方式">
+          <el-option label="左对齐" value="flex-start"></el-option>
+          <el-option label="中间对齐" value="center"></el-option>
+          <el-option label="右对齐" value="flex-end"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="垂直对齐">
         <el-select v-model="form.verticalAlign" placeholder="请选择对齐方式">
-          <el-option label="顶部对齐" value="top"></el-option>
-          <el-option label="居中对齐" value="verticalMiddle"></el-option>
-          <el-option label="顶部对齐" value="bottom"></el-option>
+          <el-option label="顶部对齐" value="flex-start"></el-option>
+          <el-option label="居中对齐" value="center"></el-option>
+          <el-option label="顶部对齐" value="flex-end"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="字体">
@@ -78,8 +78,8 @@ export default {
     }
   },
   watch: {
-    "form.align": function (val) {
-      this.syncStyleForm(val, "align");
+    "form.textAlign": function (val) {
+      this.syncStyleForm(val, "textAlign");
     },
     "form.verticalAlign": function (val) {
       this.syncStyleForm(val, "verticalAlign");

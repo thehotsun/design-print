@@ -96,15 +96,15 @@ export function TdDefine({ colIndex, rowIndex, isHead }) {
 
 function StyleForm() {
   return {
-    align: "middle",
-    verticalAlign: "verticalMiddle",
-    fontFamily: "SimSun",
+    textAlign: "flex-start",
+    verticalAlign: "center",
     isBold: false,
     isItalic: false,
     isStrikethrough: false,
     isUnderline: false,
+    fontFamily: "SimSun",
     fontSize: 12,
-    backgroundColor: "#ffffff",
+    backgroundColor: null,
     color: "#000000"
   };
 }

@@ -33,11 +33,44 @@ export function ContextMenu(options) {
 
 export const generateId = (randomLength = 10) => {
   return Number(Math.random().toString().substring(2, randomLength) + Date.now()).toString(36);
-}
+};
 
 export function findNearestTd(el) {
   while (el && el.tagName !== "TD") {
     el = el.parentNode;
   }
   return el;
+}
+
+export function mergeStyle(style = "", styleForm) {
+  console.log(styleForm);
+  if (typeof style !== "string") {
+    style = "";
+  }
+  const camel = ["fontFamily", "fontSize", "backgroundColor", "color"];
+  let str = "";
+  camel.map((key) => {
+    str += `;${convertCamelToSnake(key)}:${key === "fontSize" ? styleForm[key] + "px" : styleForm[key]}`;
+  });
+  const { isBold, isItalic, isStrikethrough, isUnderline, verticalAlign, textAlign } = styleForm;
+  if (isBold) {
+    str += `;font-weight: 700`;
+  }
+  if (isItalic) {
+    str += `;font-style: italic`;
+  }
+  if (isStrikethrough && isUnderline) {
+    str += `; text-decoration: underline line-through`;
+  } else if (isStrikethrough) {
+    str += `; text-decoration: line-through`;
+  } else if (isUnderline) {
+    str += `; text-decoration: underline`;
+  }
+  str += `; justify-content: ${textAlign}`;
+  str += `; align-items: ${verticalAlign}`;
+  return style + str;
+}
+
+function convertCamelToSnake(camelCase) {
+  return camelCase.replace(/([A-Z])/g, (match) => `-${match.toLowerCase()}`);
 }
