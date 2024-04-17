@@ -22,3 +22,5 @@ pnpm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+这是一个在线设计打印的仓库，完成了添加表格，以及表格添加行列，删除行列，双击输入值，拖拽输入值，以及render的变量转换。
