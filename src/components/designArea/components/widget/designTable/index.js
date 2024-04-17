@@ -347,7 +347,8 @@ export default {
         onDragUpdate,
         onDragAdd,
         onDragEnd,
-        curTd
+        curTd,
+        onlyShow
       } = this;
       const listeners = {
         mousedown: handleTdMousedown,
@@ -388,7 +389,9 @@ export default {
           style={style}
         >
           <div class="tdContent" style={{ background: attrs.rowspan > 1 || attrs.colspan > 1 ? "#fff" : "" }}>
-            {checkShowInput(attrs, rowIndex, colIndex) ? (
+            {onlyShow ? (
+              <span>{options.inputValue}</span>
+            ) : checkShowInput(attrs, rowIndex, colIndex) ? (
               <el-input
                 {...{
                   attrs,
